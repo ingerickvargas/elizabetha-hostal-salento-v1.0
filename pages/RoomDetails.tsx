@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ROOMS } from '../constants';
 import { Reservation } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const RoomDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const room = ROOMS.find(r => r.id === id);
+  const { t, language } = useLanguage();
 
   const [activeImg, setActiveImg] = useState(0);
   const [isBooked, setIsBooked] = useState(false);
@@ -26,13 +28,19 @@ const RoomDetails: React.FC = () => {
     );
   }
 
+  const roomName = language === 'es' ? room.name_es || room.name : room.name;
+  const roomDesc = language === 'es' ? room.longDescription_es || room.longDescription : room.longDescription;
+  const roomSize = language === 'es' ? room.size_es : room.size;
+  const roomBathroom = language === 'es' ? room.bathroom_es : room.bathroom;
+  const roomAmenity = language === 'es' ? room.amenity_es : room.amenity;
+
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const newReservation: Reservation = {
       id: Math.random().toString(36).substr(2, 9),
       roomId: room.id,
-      roomName: room.name,
+      roomName: roomName,
       checkIn: bookingData.checkIn,
       checkOut: bookingData.checkOut,
       guests: parseInt(bookingData.guests),
@@ -51,9 +59,9 @@ const RoomDetails: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Navigation Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-slate-400 mb-8 pt-8">
-          <Link to="/rooms" className="hover:text-primary transition-colors">Our Rooms</Link>
+          <Link to="/rooms" className="hover:text-primary transition-colors">{t('details.back')}</Link>
           <span className="material-symbols-outlined text-xs">chevron_right</span>
-          <span className="text-slate-900 dark:text-white font-bold">{room.name}</span>
+          <span className="text-slate-900 dark:text-white font-bold">{roomName}</span>
         </nav>
 
         <div className="grid lg:grid-cols-12 gap-12">
@@ -62,7 +70,7 @@ const RoomDetails: React.FC = () => {
             <div className="aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl border border-slate-100 dark:border-zinc-800">
               <img 
                 src={room.galleryImages[activeImg]} 
-                alt={room.name} 
+                alt={roomName} 
                 className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-500"
               />
             </div>
@@ -75,43 +83,45 @@ const RoomDetails: React.FC = () => {
                     activeImg === idx ? 'border-primary shadow-lg shadow-primary/20' : 'border-transparent opacity-60 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt={`${room.name} thumb ${idx}`} className="w-full h-full object-cover" />
+                  <img src={img} alt={`${roomName} thumb ${idx}`} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
 
             <div className="pt-12">
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">{room.name}</h1>
+              <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">{roomName}</h1>
               <div className="flex flex-wrap gap-4 mb-8">
                 <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">square_foot</span> {room.size}
+                  <span className="material-symbols-outlined text-sm">square_foot</span> {roomSize}
                 </span>
                 <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">shower</span> {room.bathroom} Bathroom
+                  <span className="material-symbols-outlined text-sm">shower</span> {roomBathroom}
                 </span>
                 <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">wifi</span> High Speed WiFi
+                  <span className="material-symbols-outlined text-sm">wifi</span> {roomAmenity}
                 </span>
               </div>
               <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
-                {room.longDescription}
+                {roomDesc}
               </p>
 
-              <h3 className="font-display text-2xl font-bold mb-6 text-slate-900 dark:text-white">Included Services</h3>
+              <h3 className="font-display text-2xl font-bold mb-6 text-slate-900 dark:text-white">{t('details.included')}</h3>
               <div className="grid grid-cols-2 gap-y-4 gap-x-8 mb-12">
                 {room.features.map((feature, idx) => (
                   <div key={idx} className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-primary">{feature.icon}</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{feature.name}</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">
+                        {language === 'es' ? feature.name_es || feature.name : feature.name}
+                    </span>
                   </div>
                 ))}
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-primary">local_cafe</span>
-                  <span className="font-medium text-slate-700 dark:text-slate-300">Daily Breakfast</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{t('details.breakfast')}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-primary">dry_cleaning</span>
-                  <span className="font-medium text-slate-700 dark:text-slate-300">Linens & Towels</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{t('details.linens')}</span>
                 </div>
               </div>
             </div>
@@ -126,19 +136,19 @@ const RoomDetails: React.FC = () => {
                     <div className="flex justify-between items-end mb-8">
                       <div>
                         <span className="text-3xl font-bold text-slate-900 dark:text-white">${room.price}</span>
-                        <span className="text-slate-500 text-sm ml-1">/ night</span>
+                        <span className="text-slate-500 text-sm ml-1">{t('details.book.night')}</span>
                       </div>
                       <div className="flex items-center gap-1 text-primary">
                         <span className="material-symbols-outlined fill-1">star</span>
                         <span className="font-bold">4.9</span>
-                        <span className="text-xs text-slate-400 font-medium">(24 reviews)</span>
+                        <span className="text-xs text-slate-400 font-medium">{t('details.book.reviews')}</span>
                       </div>
                     </div>
 
                     <form onSubmit={handleBookingSubmit} className="space-y-6">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Check In</label>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkin')}</label>
                           <input 
                             type="date" 
                             required
@@ -148,7 +158,7 @@ const RoomDetails: React.FC = () => {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Check Out</label>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkout')}</label>
                           <input 
                             type="date" 
                             required
@@ -160,16 +170,16 @@ const RoomDetails: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Number of Guests</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.guests')}</label>
                         <select 
                           className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm appearance-none"
                           value={bookingData.guests}
                           onChange={(e) => setBookingData({...bookingData, guests: e.target.value})}
                         >
-                          <option value="1">1 Person</option>
-                          <option value="2">2 People</option>
-                          <option value="3">3 People</option>
-                          <option value="4">4 People</option>
+                          <option value="1">{t('home.search.guest1')}</option>
+                          <option value="2">{t('home.search.guest2')}</option>
+                          <option value="3">{t('home.search.guest3')}</option>
+                          <option value="4">4 Guests</option>
                         </select>
                       </div>
 
@@ -177,16 +187,16 @@ const RoomDetails: React.FC = () => {
                         type="submit" 
                         className="w-full bg-secondary text-white py-5 rounded-2xl font-bold text-lg hover:bg-opacity-90 shadow-xl shadow-secondary/20 transition-all active:scale-[0.98]"
                       >
-                        Book This Room
+                        {t('details.book.title')}
                       </button>
 
                       <div className="pt-4 space-y-3">
                         <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
-                          <span>Service fee</span>
+                          <span>{t('details.book.fee')}</span>
                           <span>$0.00</span>
                         </div>
                         <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-zinc-800 pt-3">
-                          <span className="text-slate-900 dark:text-white">Total</span>
+                          <span className="text-slate-900 dark:text-white">{t('details.book.total')}</span>
                           <span className="text-slate-900 dark:text-white">${room.price}</span>
                         </div>
                       </div>
@@ -197,13 +207,13 @@ const RoomDetails: React.FC = () => {
                     <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
                       <span className="material-symbols-outlined text-primary text-5xl">check_circle</span>
                     </div>
-                    <h2 className="font-display text-3xl font-bold text-slate-900 dark:text-white mb-4">Reservation Sent!</h2>
-                    <p className="text-slate-500 dark:text-slate-400 mb-8 px-4">Your stay at {room.name} has been requested. We'll confirm shortly.</p>
+                    <h2 className="font-display text-3xl font-bold text-slate-900 dark:text-white mb-4">{t('details.success.title')}</h2>
+                    <p className="text-slate-500 dark:text-slate-400 mb-8 px-4">{t('details.success.desc').replace('{room}', roomName)}</p>
                     
                     <div className="bg-slate-50 dark:bg-zinc-800 rounded-2xl p-6 text-left space-y-4 mb-8">
                        <div className="flex justify-between items-center text-sm">
-                         <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Room</span>
-                         <span className="font-bold text-slate-800 dark:text-slate-200">{room.name}</span>
+                         <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">{t('join.room')}</span>
+                         <span className="font-bold text-slate-800 dark:text-slate-200">{roomName}</span>
                        </div>
                        <div className="flex justify-between items-center text-sm">
                          <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Dates</span>
@@ -215,13 +225,13 @@ const RoomDetails: React.FC = () => {
                       onClick={() => setIsBooked(false)}
                       className="text-primary font-bold text-sm hover:underline"
                     >
-                      Modify Reservation
+                      {t('details.success.modify')}
                     </button>
                     <Link 
                       to="/rooms" 
                       className="block w-full mt-6 bg-primary text-white py-4 rounded-xl font-bold"
                     >
-                      Back to All Rooms
+                      {t('details.success.back')}
                     </Link>
                   </div>
                 )}

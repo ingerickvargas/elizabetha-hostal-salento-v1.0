@@ -10,6 +10,7 @@ import Gallery from './pages/Gallery';
 import Location from './pages/Location';
 import Join from './pages/Join';
 import Admin from './pages/Admin';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -21,36 +22,38 @@ const ScrollToTop = () => {
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <ScrollToTop />
-      <div className="flex flex-col min-h-screen">
-        <Routes>
-          {/* Layouts without standard nav/footer */}
-          <Route path="/join" element={<Join />} />
-          <Route path="/admin" element={<Admin />} />
-          
-          {/* Main Layout */}
-          <Route
-            path="*"
-            element={
-              <>
-                <Navbar />
-                <main className="flex-grow">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/rooms" element={<Rooms />} />
-                    <Route path="/rooms/:id" element={<RoomDetails />} />
-                    <Route path="/gallery" element={<Gallery />} />
-                    <Route path="/location" element={<Location />} />
-                  </Routes>
-                </main>
-                <Footer />
-              </>
-            }
-          />
-        </Routes>
-      </div>
-    </Router>
+    <LanguageProvider>
+      <Router>
+        <ScrollToTop />
+        <div className="flex flex-col min-h-screen">
+          <Routes>
+            {/* Layouts without standard nav/footer */}
+            <Route path="/join" element={<Join />} />
+            <Route path="/admin" element={<Admin />} />
+            
+            {/* Main Layout */}
+            <Route
+              path="*"
+              element={
+                <>
+                  <Navbar />
+                  <main className="flex-grow">
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/rooms" element={<Rooms />} />
+                      <Route path="/rooms/:id" element={<RoomDetails />} />
+                      <Route path="/gallery" element={<Gallery />} />
+                      <Route path="/location" element={<Location />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </>
+              }
+            />
+          </Routes>
+        </div>
+      </Router>
+    </LanguageProvider>
   );
 };
 

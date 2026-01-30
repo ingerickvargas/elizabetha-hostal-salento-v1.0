@@ -1,14 +1,17 @@
 
 import React from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Location: React.FC = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="animate-in fade-in duration-700">
       <header className="relative py-32 bg-slate-100 dark:bg-slate-900/50 overflow-hidden">
         <div className="max-w-4xl mx-auto text-center px-4 relative z-10">
-          <h1 className="font-display text-5xl md:text-7xl text-secondary dark:text-primary mb-8">Finding Elizabeta</h1>
+          <h1 className="font-display text-5xl md:text-7xl text-secondary dark:text-primary mb-8">{t('location.title')}</h1>
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 leading-relaxed font-light">
-            Nestled in the heart of Salento, Quindío, our hostel is your peaceful gateway to the stunning landscapes of the Coffee Axis.
+            {t('location.subtitle')}
           </p>
         </div>
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
@@ -33,7 +36,7 @@ const Location: React.FC = () => {
             </div>
 
             <div className="space-y-10">
-              <h2 className="font-display text-4xl text-secondary dark:text-primary">Getting Here</h2>
+              <h2 className="font-display text-4xl text-secondary dark:text-primary">{t('location.getting.title')}</h2>
               
               <div className="space-y-8">
                 <div className="flex gap-6">
@@ -41,9 +44,9 @@ const Location: React.FC = () => {
                     <span className="material-icons-outlined text-2xl">directions_bus</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2 text-slate-900 dark:text-white">From Armenia (AXM)</h4>
+                    <h4 className="font-bold text-lg mb-2 text-slate-900 dark:text-white">{t('location.getting.bus.title')}</h4>
                     <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                      Buses leave every 20 minutes from the main Terminal. The journey takes about 45-60 minutes through lush green hills.
+                      {t('location.getting.bus.desc')}
                     </p>
                   </div>
                 </div>
@@ -53,9 +56,9 @@ const Location: React.FC = () => {
                     <span className="material-icons-outlined text-2xl">directions_car</span>
                   </div>
                   <div>
-                    <h4 className="font-bold text-lg mb-2 text-slate-900 dark:text-white">From Pereira (PEI)</h4>
+                    <h4 className="font-bold text-lg mb-2 text-slate-900 dark:text-white">{t('location.getting.car.title')}</h4>
                     <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
-                      Regular buses depart from Terminal de Transportes de Pereira. Expect a scenic 1-hour trip through the mountains.
+                      {t('location.getting.car.desc')}
                     </p>
                   </div>
                 </div>
@@ -64,9 +67,9 @@ const Location: React.FC = () => {
                   <div className="absolute top-0 right-0 p-4 opacity-10">
                     <span className="material-symbols-outlined text-6xl rotate-12">lightbulb</span>
                   </div>
-                  <h4 className="font-display text-2xl text-secondary dark:text-primary mb-4">Pro Tip</h4>
+                  <h4 className="font-display text-2xl text-secondary dark:text-primary mb-4">{t('location.tip.title')}</h4>
                   <p className="text-sm italic text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Salento is a walking town. Once you arrive at the main plaza, we are just a short 3-block walk up the colorful Calle Real.
+                    {t('location.tip.desc')}
                   </p>
                 </div>
               </div>
@@ -79,14 +82,14 @@ const Location: React.FC = () => {
       <section className="py-24 bg-slate-50 dark:bg-zinc-900/30">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="font-display text-4xl text-secondary dark:text-primary mb-4">Discover Salento</h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">Explore the wonders of the Coffee Region right from our doorstep.</p>
+            <h2 className="font-display text-4xl text-secondary dark:text-primary mb-4">{t('location.discover.title')}</h2>
+            <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">{t('location.discover.subtitle')}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-10">
             {[
-              { title: 'Cocora Valley', img: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=600', desc: "Home of the world's tallest wax palms. A must-visit trek just 20 mins away." },
-              { title: 'Coffee Tours', img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=600', desc: "Experience the seed-to-cup process at traditional local 'fincas'." },
-              { title: 'Filandia Village', img: 'https://images.unsplash.com/photo-1534067783941-51c9c23ecefd?auto=format&fit=crop&q=80&w=600', desc: "Charming town known for colorful balconies and local crafts." }
+              { title: t('location.poi.cocora'), img: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=600', desc: t('location.poi.cocora.desc') },
+              { title: t('location.poi.coffee'), img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=600', desc: t('location.poi.coffee.desc') },
+              { title: t('location.poi.filandia'), img: 'https://images.unsplash.com/photo-1534067783941-51c9c23ecefd?auto=format&fit=crop&q=80&w=600', desc: t('location.poi.filandia.desc') }
             ].map(poi => (
               <div key={poi.title} className="group cursor-pointer rounded-3xl overflow-hidden bg-white dark:bg-zinc-800 shadow-xl border border-slate-100 dark:border-zinc-700">
                 <div className="h-64 overflow-hidden">
@@ -96,7 +99,7 @@ const Location: React.FC = () => {
                   <h3 className="font-display text-2xl mb-3 text-slate-900 dark:text-white">{poi.title}</h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">{poi.desc}</p>
                   <button className="text-primary font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
-                    Learn More <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    {t('location.learn')} <span className="material-symbols-outlined text-sm">arrow_forward</span>
                   </button>
                 </div>
               </div>

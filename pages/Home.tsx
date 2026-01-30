@@ -3,6 +3,7 @@ import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ROOMS } from '../constants';
 import { Room } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Home: React.FC = () => {
   const [checkIn, setCheckIn] = useState('');
@@ -11,6 +12,7 @@ const Home: React.FC = () => {
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   
+  const { t, language } = useLanguage();
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleCheckAvailability = () => {
@@ -30,31 +32,36 @@ const Home: React.FC = () => {
       {/* Hero Section */}
       <header className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <img 
-            alt="Stunning view of Cocora Valley, Salento" 
-            className="w-full h-full object-cover scale-105" 
-            src="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=2000"
-          />
-          <div className="absolute inset-0 hero-gradient bg-black/30"></div>
+          <video 
+            autoPlay 
+            loop 
+            muted 
+            playsInline
+            className="w-full h-full object-cover scale-105"
+            poster="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=2000"
+          >
+            <source src="https://videos.pexels.com/video-files/2454661/2454661-hd_1920_1080_30fps.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 hero-gradient bg-black/40"></div>
         </div>
         <div className="relative z-10 text-center px-4">
-          <h2 className="text-white font-handwritten text-4xl md:text-6xl mb-4 drop-shadow-md">Welcome to</h2>
-          <h1 className="text-white font-display text-5xl md:text-8xl font-bold mb-6 tracking-tight drop-shadow-lg">Hostal Elizabetha</h1>
+          <h2 className="text-white font-handwritten text-4xl md:text-6xl mb-4 drop-shadow-md">{t('home.hero.welcome')}</h2>
+          <h1 className="text-white font-display text-5xl md:text-8xl font-bold mb-6 tracking-tight drop-shadow-lg">{t('home.hero.title')}</h1>
           <p className="text-white/90 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light drop-shadow">
-            Experience the magic of Salento amidst the rolling hills of the Quindío coffee region.
+            {t('home.hero.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               className="bg-primary text-white px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl shadow-primary/30" 
               to="/rooms"
             >
-              Explore Rooms
+              {t('home.hero.explore')}
             </Link>
             <Link 
               className="bg-white/10 backdrop-blur-md text-white border border-white/40 px-10 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all" 
               to="/gallery"
             >
-              Our Story
+              {t('home.hero.story')}
             </Link>
           </div>
         </div>
@@ -63,7 +70,7 @@ const Home: React.FC = () => {
         <div className="absolute bottom-0 left-0 w-full px-4 pb-12 translate-y-6 md:translate-y-12">
           <div className="max-w-6xl mx-auto bg-white dark:bg-zinc-900 shadow-2xl rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-end md:items-center gap-6 border border-slate-100 dark:border-zinc-800">
             <div className="flex-1 w-full">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Check In</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkin')}</label>
               <div className="relative">
                 <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">calendar_today</span>
                 <input 
@@ -75,7 +82,7 @@ const Home: React.FC = () => {
               </div>
             </div>
             <div className="flex-1 w-full">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Check Out</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkout')}</label>
               <div className="relative">
                 <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">calendar_today</span>
                 <input 
@@ -87,7 +94,7 @@ const Home: React.FC = () => {
               </div>
             </div>
             <div className="flex-1 w-full">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Guests</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.guests')}</label>
               <div className="relative">
                 <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">person</span>
                 <select 
@@ -95,9 +102,9 @@ const Home: React.FC = () => {
                   value={guests}
                   onChange={(e) => setGuests(e.target.value)}
                 >
-                  <option value="1">1 Guest</option>
-                  <option value="2">2 Guests</option>
-                  <option value="3">3 Guests</option>
+                  <option value="1">{t('home.search.guest1')}</option>
+                  <option value="2">{t('home.search.guest2')}</option>
+                  <option value="3">{t('home.search.guest3')}</option>
                 </select>
               </div>
             </div>
@@ -105,7 +112,7 @@ const Home: React.FC = () => {
               onClick={handleCheckAvailability}
               className="w-full md:w-auto bg-secondary text-white px-10 py-4 rounded-xl font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2"
             >
-              Check Availability
+              {t('home.search.check')}
               <span className="material-icons-outlined">search</span>
             </button>
           </div>
@@ -116,9 +123,9 @@ const Home: React.FC = () => {
       <div ref={resultsRef} className={`transition-all duration-700 ${hasSearched ? 'opacity-100 py-40' : 'opacity-0 h-0 overflow-hidden'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="text-primary font-bold uppercase tracking-widest text-sm inline-block mb-4">Your Search Results</span>
-            <h2 className="text-4xl font-display font-bold text-slate-900 dark:text-white">Available Rooms</h2>
-            <p className="text-slate-500 mt-4">We found {availableRooms.length} perfect options for your stay in Salento.</p>
+            <span className="text-primary font-bold uppercase tracking-widest text-sm inline-block mb-4">{t('home.results.title')}</span>
+            <h2 className="text-4xl font-display font-bold text-slate-900 dark:text-white">{t('home.results.available')}</h2>
+            <p className="text-slate-500 mt-4">{t('home.results.found').replace('{count}', availableRooms.length.toString())}</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -127,21 +134,25 @@ const Home: React.FC = () => {
                 <div className="relative h-64">
                   <img src={room.image} alt={room.name} className="w-full h-full object-cover" />
                   <div className="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-xs font-bold">
-                    ${room.price}/night
+                    ${room.price}{t('details.book.night')}
                   </div>
                 </div>
                 <div className="p-8 flex-grow flex flex-col">
-                  <h3 className="text-2xl font-display font-bold mb-3 text-slate-900 dark:text-white">{room.name}</h3>
-                  <p className="text-sm text-slate-500 mb-6 flex-grow">{room.description}</p>
+                  <h3 className="text-2xl font-display font-bold mb-3 text-slate-900 dark:text-white">
+                    {language === 'es' ? room.name_es || room.name : room.name}
+                  </h3>
+                  <p className="text-sm text-slate-500 mb-6 flex-grow">
+                     {language === 'es' ? room.description_es || room.description : room.description}
+                  </p>
                   
                   <div className="flex gap-4 mb-6">
                     <div className="flex items-center gap-1.5 text-slate-400">
                       <span className="material-symbols-outlined text-sm">group</span>
-                      <span className="text-xs font-bold">Max {room.capacity}</span>
+                      <span className="text-xs font-bold">{t('home.results.max').replace('{count}', room.capacity.toString())}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-slate-400">
                       <span className="material-symbols-outlined text-sm">wifi</span>
-                      <span className="text-xs font-bold">Free WiFi</span>
+                      <span className="text-xs font-bold">{t('home.results.wifi')}</span>
                     </div>
                   </div>
 
@@ -149,7 +160,7 @@ const Home: React.FC = () => {
                     to={`/rooms/${room.id}`}
                     className="w-full bg-primary text-white py-3 rounded-xl font-bold text-center hover:bg-opacity-90 transition-all"
                   >
-                    View Details & Book
+                    {t('home.results.details')}
                   </Link>
                 </div>
               </div>
@@ -183,10 +194,10 @@ const Home: React.FC = () => {
             </div>
             <div className="space-y-8">
               <div>
-                <span className="text-primary font-bold uppercase tracking-widest text-sm inline-block mb-4">Our Heritage</span>
-                <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 text-slate-900 dark:text-white leading-tight">Authentic Hospitality in the Heart of Quindío</h2>
+                <span className="text-primary font-bold uppercase tracking-widest text-sm inline-block mb-4">{t('home.heritage.badge')}</span>
+                <h2 className="text-4xl md:text-5xl font-display font-bold mb-6 text-slate-900 dark:text-white leading-tight">{t('home.heritage.title')}</h2>
                 <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Hostal Elizabeta isn't just a place to stay; it's a sanctuary designed to connect you with the vibrant culture and breathtaking nature of Salento. Named after our founder's grandmother, we carry forward a tradition of genuine Colombian warmth.
+                  {t('home.heritage.desc')}
                 </p>
               </div>
               
@@ -195,13 +206,13 @@ const Home: React.FC = () => {
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="material-icons-outlined text-primary">local_cafe</span>
                   </div>
-                  <span className="font-medium">Estate Coffee</span>
+                  <span className="font-medium">{t('home.heritage.coffee')}</span>
                 </li>
                 <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="material-icons-outlined text-primary">landscape</span>
                   </div>
-                  <span className="font-medium">Valley Tours</span>
+                  <span className="font-medium">{t('home.heritage.tours')}</span>
                 </li>
                 <li className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -213,7 +224,7 @@ const Home: React.FC = () => {
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <span className="material-icons-outlined text-primary">restaurant</span>
                   </div>
-                  <span className="font-medium">Local Breakfast</span>
+                  <span className="font-medium">{t('home.heritage.breakfast')}</span>
                 </li>
               </ul>
             </div>
@@ -228,11 +239,11 @@ const Home: React.FC = () => {
           <div className="absolute inset-0 bg-secondary/80 mix-blend-multiply"></div>
         </div>
         <div className="relative z-10 max-w-4xl mx-auto text-center px-4">
-          <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-8">Ready to escape to the coffee region?</h2>
-          <p className="text-white/80 text-lg mb-12 max-w-2xl mx-auto">Book directly with us to get the best rates and a complimentary traditional breakfast for every morning of your stay.</p>
+          <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-8">{t('home.cta.title')}</h2>
+          <p className="text-white/80 text-lg mb-12 max-w-2xl mx-auto">{t('home.cta.desc')}</p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link to="/join" className="bg-primary text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-opacity-90 shadow-2xl shadow-primary/40 transition-all">Book Securely Now</Link>
-            <Link to="/location" className="bg-transparent border-2 border-white text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-secondary transition-all">Contact Us First</Link>
+            <Link to="/join" className="bg-primary text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-opacity-90 shadow-2xl shadow-primary/40 transition-all">{t('home.cta.book')}</Link>
+            <Link to="/location" className="bg-transparent border-2 border-white text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-secondary transition-all">{t('home.cta.contact')}</Link>
           </div>
         </div>
       </section>

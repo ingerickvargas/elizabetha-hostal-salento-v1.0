@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROOMS } from '../constants';
 import { Reservation } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Join: React.FC = () => {
+  const { t, language } = useLanguage();
   const [isBooked, setIsBooked] = useState(false);
   const [bookingData, setBookingData] = useState({
     checkIn: '',
@@ -17,12 +19,13 @@ const Join: React.FC = () => {
     e.preventDefault();
     
     const selectedRoom = ROOMS.find(r => r.id === bookingData.roomType);
+    const roomName = language === 'es' ? selectedRoom?.name_es || selectedRoom?.name : selectedRoom?.name;
     
     // Create reservation object
     const newReservation: Reservation = {
       id: Math.random().toString(36).substr(2, 9),
       roomId: bookingData.roomType,
-      roomName: selectedRoom?.name || 'Unknown Room',
+      roomName: roomName || 'Unknown Room',
       checkIn: bookingData.checkIn,
       checkOut: bookingData.checkOut,
       guests: parseInt(bookingData.guests),
@@ -38,6 +41,7 @@ const Join: React.FC = () => {
   };
 
   const selectedRoom = ROOMS.find(r => r.id === bookingData.roomType);
+  const selectedRoomName = language === 'es' ? selectedRoom?.name_es || selectedRoom?.name : selectedRoom?.name;
 
   return (
     <div className="flex min-h-screen animate-in slide-in-from-right duration-700 bg-white dark:bg-zinc-950 overflow-hidden">
@@ -50,15 +54,15 @@ const Join: React.FC = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent"></div>
         <div className="absolute bottom-20 left-20 right-20 text-white space-y-4">
-          <p className="font-handwritten text-5xl mb-6">Escape to Quindío</p>
-          <h2 className="font-display text-6xl font-bold leading-tight drop-shadow-lg">Begin your journey in the heart of coffee country.</h2>
+          <p className="font-handwritten text-5xl mb-6">{t('join.hero.title')}</p>
+          <h2 className="font-display text-6xl font-bold leading-tight drop-shadow-lg">{t('join.hero.subtitle')}</h2>
         </div>
         <Link 
           to="/"
           className="absolute top-10 left-10 flex items-center gap-2 text-white bg-black/20 backdrop-blur-xl px-6 py-3 rounded-full hover:bg-black/40 transition-all font-semibold"
         >
           <span className="material-symbols-outlined text-lg">arrow_back</span>
-          <span>Back to Home</span>
+          <span>{t('join.back')}</span>
         </Link>
       </div>
 
@@ -73,15 +77,15 @@ const Join: React.FC = () => {
                 <div className="mb-8">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="material-symbols-outlined text-primary">event_available</span>
-                    <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Quick Booking</h2>
+                    <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">{t('join.title')}</h2>
                   </div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Secure your room in Salento today.</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('join.subtitle')}</p>
                 </div>
 
                 <form className="space-y-4" onSubmit={handleBookingSubmit}>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Check In</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkin')}</label>
                       <input 
                         type="date" 
                         required
@@ -91,7 +95,7 @@ const Join: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Check Out</label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkout')}</label>
                       <input 
                         type="date" 
                         required
@@ -103,29 +107,29 @@ const Join: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Room Type</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('join.room')}</label>
                     <select 
                       className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm appearance-none"
                       value={bookingData.roomType}
                       onChange={(e) => setBookingData({...bookingData, roomType: e.target.value})}
                     >
                       {ROOMS.map(room => (
-                        <option key={room.id} value={room.id}>{room.name} - ${room.price}/night</option>
+                        <option key={room.id} value={room.id}>{language === 'es' ? room.name_es : room.name} - ${room.price}{t('details.book.night')}</option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Guests</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('join.guests')}</label>
                     <select 
                       className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm appearance-none"
                       value={bookingData.guests}
                       onChange={(e) => setBookingData({...bookingData, guests: e.target.value})}
                     >
-                      <option value="1">1 Guest</option>
-                      <option value="2">2 Guests</option>
-                      <option value="3">3 Guests</option>
-                      <option value="4">4 Guests</option>
+                      <option value="1">{t('home.search.guest1')}</option>
+                      <option value="2">{t('home.search.guest2')}</option>
+                      <option value="3">{t('home.search.guest3')}</option>
+                      <option value="4">4 {t('join.guests')}</option>
                     </select>
                   </div>
 
@@ -133,7 +137,7 @@ const Join: React.FC = () => {
                     type="submit" 
                     className="w-full bg-secondary text-white py-4 rounded-xl font-bold text-base hover:bg-opacity-90 shadow-lg shadow-secondary/20 transition-all active:scale-[0.98]"
                   >
-                    Book Now
+                    {t('join.button')}
                   </button>
                 </form>
               </div>
@@ -142,13 +146,13 @@ const Join: React.FC = () => {
                 <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="material-symbols-outlined text-primary text-5xl">check_circle</span>
                 </div>
-                <h2 className="font-display text-3xl font-bold text-slate-900 dark:text-white mb-4">Stay Confirmed!</h2>
-                <p className="text-slate-500 dark:text-slate-400 mb-8 px-4">We've reserved your space at Hostal Elizabeta. A confirmation email is on its way.</p>
+                <h2 className="font-display text-3xl font-bold text-slate-900 dark:text-white mb-4">{t('join.confirmed')}</h2>
+                <p className="text-slate-500 dark:text-slate-400 mb-8 px-4">{t('join.confirmed.desc')}</p>
                 
                 <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 text-left space-y-4 border border-slate-100 dark:border-zinc-700 mb-8">
                   <div className="flex justify-between items-center border-b border-slate-50 dark:border-zinc-700 pb-3">
-                    <span className="text-xs font-bold uppercase text-slate-400">Room</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-100">{selectedRoom?.name}</span>
+                    <span className="text-xs font-bold uppercase text-slate-400">{t('join.room')}</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{selectedRoomName}</span>
                   </div>
                   <div className="flex justify-between items-center border-b border-slate-50 dark:border-zinc-700 pb-3">
                     <span className="text-xs font-bold uppercase text-slate-400">Check-in</span>
@@ -159,8 +163,8 @@ const Join: React.FC = () => {
                     <span className="font-bold text-slate-800 dark:text-slate-100">{bookingData.checkOut}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold uppercase text-slate-400">Guests</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-100">{bookingData.guests} People</span>
+                    <span className="text-xs font-bold uppercase text-slate-400">{t('join.guests')}</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{bookingData.guests}</span>
                   </div>
                 </div>
 
@@ -169,13 +173,13 @@ const Join: React.FC = () => {
                     to="/" 
                     className="block w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20"
                   >
-                    Go to Homepage
+                    {t('join.home')}
                   </Link>
                   <button 
                     onClick={() => setIsBooked(false)}
                     className="text-primary font-bold text-sm hover:underline"
                   >
-                    Book another stay
+                    {t('join.another')}
                   </button>
                 </div>
               </div>
