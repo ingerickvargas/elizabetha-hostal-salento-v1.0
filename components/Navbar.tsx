@@ -42,6 +42,12 @@ const Navbar: React.FC = () => {
               Book Now
             </button>
             <button 
+              onClick={() => navigate('/admin')}
+              className="bg-primary hover:bg-opacity-90 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition-all shadow-lg shadow-primary/20"
+            >
+              Admin
+            </button>
+            <button 
               onClick={() => document.documentElement.classList.toggle('dark')}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500"
             >
