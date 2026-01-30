@@ -1,9 +1,43 @@
 
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ROOMS } from '../constants';
+import { Reservation } from '../types';
 
 const Join: React.FC = () => {
-  const navigate = useNavigate();
+  const [isBooked, setIsBooked] = useState(false);
+  const [bookingData, setBookingData] = useState({
+    checkIn: '',
+    checkOut: '',
+    guests: '2',
+    roomType: ROOMS[0].id
+  });
+
+  const handleBookingSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const selectedRoom = ROOMS.find(r => r.id === bookingData.roomType);
+    
+    // Create reservation object
+    const newReservation: Reservation = {
+      id: Math.random().toString(36).substr(2, 9),
+      roomId: bookingData.roomType,
+      roomName: selectedRoom?.name || 'Unknown Room',
+      checkIn: bookingData.checkIn,
+      checkOut: bookingData.checkOut,
+      guests: parseInt(bookingData.guests),
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+
+    // Save to localStorage
+    const existing = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
+    localStorage.setItem('elizabeta_reservations', JSON.stringify([newReservation, ...existing]));
+
+    setIsBooked(true);
+  };
+
+  const selectedRoom = ROOMS.find(r => r.id === bookingData.roomType);
 
   return (
     <div className="flex min-h-screen animate-in slide-in-from-right duration-700 bg-white dark:bg-zinc-950 overflow-hidden">
@@ -28,77 +62,128 @@ const Join: React.FC = () => {
         </Link>
       </div>
 
-      {/* Right Column: Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-20 overflow-y-auto no-scrollbar">
-        <div className="max-w-md w-full py-12">
-          <div className="mb-12 text-center lg:text-left">
-            <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-10 mx-auto lg:mx-0">
-               <span className="material-symbols-outlined text-primary text-4xl">cottage</span>
-            </div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">Join the Family</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-lg">Create an account to manage your reservations and receive exclusive member benefits.</p>
-          </div>
+      {/* Right Column: Form Container */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center p-8 sm:p-20 overflow-y-auto no-scrollbar">
+        <div className="max-w-md w-full py-12 flex flex-col justify-center min-h-full">
+          
+          {/* Booking Section */}
+          <section className="bg-slate-50 dark:bg-zinc-900/50 p-8 rounded-[2rem] border border-slate-100 dark:border-zinc-800 shadow-xl relative overflow-hidden">
+            {!isBooked ? (
+              <div className="animate-in fade-in duration-500">
+                <div className="mb-8">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="material-symbols-outlined text-primary">event_available</span>
+                    <h2 className="font-display text-2xl font-bold text-slate-900 dark:text-white">Quick Booking</h2>
+                  </div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Secure your room in Salento today.</p>
+                </div>
 
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); navigate('/'); }}>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Full Name</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">person</span>
-                <input 
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-slate-900 dark:text-white" 
-                  placeholder="John Doe" 
-                  type="text" 
-                  required
-                />
+                <form className="space-y-4" onSubmit={handleBookingSubmit}>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Check In</label>
+                      <input 
+                        type="date" 
+                        required
+                        className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                        value={bookingData.checkIn}
+                        onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Check Out</label>
+                      <input 
+                        type="date" 
+                        required
+                        className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                        value={bookingData.checkOut}
+                        onChange={(e) => setBookingData({...bookingData, checkOut: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Room Type</label>
+                    <select 
+                      className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm appearance-none"
+                      value={bookingData.roomType}
+                      onChange={(e) => setBookingData({...bookingData, roomType: e.target.value})}
+                    >
+                      {ROOMS.map(room => (
+                        <option key={room.id} value={room.id}>{room.name} - ${room.price}/night</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Guests</label>
+                    <select 
+                      className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm appearance-none"
+                      value={bookingData.guests}
+                      onChange={(e) => setBookingData({...bookingData, guests: e.target.value})}
+                    >
+                      <option value="1">1 Guest</option>
+                      <option value="2">2 Guests</option>
+                      <option value="3">3 Guests</option>
+                      <option value="4">4 Guests</option>
+                    </select>
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    className="w-full bg-secondary text-white py-4 rounded-xl font-bold text-base hover:bg-opacity-90 shadow-lg shadow-secondary/20 transition-all active:scale-[0.98]"
+                  >
+                    Book Now
+                  </button>
+                </form>
               </div>
-            </div>
+            ) : (
+              <div className="animate-in zoom-in-95 duration-500 text-center py-4">
+                <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <span className="material-symbols-outlined text-primary text-5xl">check_circle</span>
+                </div>
+                <h2 className="font-display text-3xl font-bold text-slate-900 dark:text-white mb-4">Stay Confirmed!</h2>
+                <p className="text-slate-500 dark:text-slate-400 mb-8 px-4">We've reserved your space at Hostal Elizabeta. A confirmation email is on its way.</p>
+                
+                <div className="bg-white dark:bg-zinc-800 rounded-2xl p-6 text-left space-y-4 border border-slate-100 dark:border-zinc-700 mb-8">
+                  <div className="flex justify-between items-center border-b border-slate-50 dark:border-zinc-700 pb-3">
+                    <span className="text-xs font-bold uppercase text-slate-400">Room</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{selectedRoom?.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-slate-50 dark:border-zinc-700 pb-3">
+                    <span className="text-xs font-bold uppercase text-slate-400">Check-in</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{bookingData.checkIn}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-slate-50 dark:border-zinc-700 pb-3">
+                    <span className="text-xs font-bold uppercase text-slate-400">Check-out</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{bookingData.checkOut}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold uppercase text-slate-400">Guests</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100">{bookingData.guests} People</span>
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Email Address</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">mail</span>
-                <input 
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-slate-900 dark:text-white" 
-                  placeholder="hello@example.com" 
-                  type="email"
-                  required
-                />
+                <div className="space-y-4">
+                  <Link 
+                    to="/" 
+                    className="block w-full bg-primary text-white py-4 rounded-xl font-bold hover:bg-opacity-90 transition-all shadow-lg shadow-primary/20"
+                  >
+                    Go to Homepage
+                  </Link>
+                  <button 
+                    onClick={() => setIsBooked(false)}
+                    className="text-primary font-bold text-sm hover:underline"
+                  >
+                    Book another stay
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
+          </section>
 
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Password</label>
-              <div className="relative">
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">lock</span>
-                <input 
-                  className="w-full pl-12 pr-12 py-4 bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 rounded-2xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-slate-900 dark:text-white" 
-                  placeholder="••••••••" 
-                  type="password"
-                  required
-                />
-                <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                  <span className="material-symbols-outlined">visibility</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 py-2">
-              <input type="checkbox" className="h-5 w-5 rounded-lg border-slate-300 text-primary focus:ring-primary cursor-pointer" id="terms" required />
-              <label htmlFor="terms" className="text-sm text-slate-500 dark:text-slate-400 cursor-pointer">
-                I agree to the <a href="#" className="text-primary font-bold hover:underline">Terms of Service</a> and <a href="#" className="text-primary font-bold hover:underline">Privacy Policy</a>.
-              </label>
-            </div>
-
-            <button 
-              type="submit" 
-              className="w-full bg-primary text-white py-5 rounded-2xl font-bold text-lg hover:bg-opacity-90 shadow-2xl shadow-primary/30 transition-all active:scale-[0.98]"
-            >
-              Create Account
-            </button>
-          </form>
-
-          <div className="mt-12 text-center">
-             <p className="text-slate-500">Already have an account? <a href="#" className="font-bold text-secondary dark:text-primary hover:underline ml-1">Log in here</a></p>
+          <div className="mt-8 text-center">
+            <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold">Hostal Elizabeta &copy; 2024</p>
           </div>
         </div>
       </div>

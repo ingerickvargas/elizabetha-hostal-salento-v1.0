@@ -19,7 +19,7 @@ const Rooms: React.FC = () => {
           {ROOMS.map((room) => (
             <div 
               key={room.id} 
-              className="group bg-white dark:bg-zinc-800/50 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-zinc-800"
+              className="group bg-white dark:bg-zinc-800/50 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-zinc-800 flex flex-col"
             >
               <div className="relative overflow-hidden aspect-[4/3]">
                 <img 
@@ -31,9 +31,23 @@ const Rooms: React.FC = () => {
                   {room.tag}
                 </div>
               </div>
-              <div className="p-8">
+              <div className="p-8 flex-grow flex flex-col">
                 <h3 className="text-2xl font-display font-bold mb-3 text-slate-900 dark:text-white">{room.name}</h3>
                 <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 leading-relaxed">{room.description}</p>
+                
+                {/* Specific Room Features */}
+                <div className="mb-8 p-4 bg-slate-50 dark:bg-zinc-900/40 rounded-2xl border border-slate-100 dark:border-zinc-800">
+                  <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Room Highlights</h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    {room.features.slice(0, 3).map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-primary text-lg">{feature.icon}</span>
+                        <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">{feature.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="flex items-center gap-4 text-slate-400 mb-8 border-t border-slate-50 dark:border-zinc-800 pt-6">
                   <div className="flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-primary text-xl">square_foot</span>
@@ -48,9 +62,10 @@ const Rooms: React.FC = () => {
                     <span className="text-xs font-medium">{room.amenity}</span>
                   </div>
                 </div>
+                
                 <Link 
-                  to="/join" 
-                  className="w-full inline-block text-center py-4 border-2 border-primary text-primary font-bold rounded-2xl hover:bg-primary hover:text-white transition-all shadow-sm hover:shadow-primary/20"
+                  to={`/rooms/${room.id}`} 
+                  className="w-full mt-auto inline-block text-center py-4 border-2 border-primary text-primary font-bold rounded-2xl hover:bg-primary hover:text-white transition-all shadow-sm hover:shadow-primary/20"
                 >
                   View Details
                 </Link>

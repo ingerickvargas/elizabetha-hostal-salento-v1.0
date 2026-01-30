@@ -5,9 +5,11 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Rooms from './pages/Rooms';
+import RoomDetails from './pages/RoomDetails';
 import Gallery from './pages/Gallery';
 import Location from './pages/Location';
 import Join from './pages/Join';
+import Admin from './pages/Admin';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -23,8 +25,9 @@ const App: React.FC = () => {
       <ScrollToTop />
       <div className="flex flex-col min-h-screen">
         <Routes>
-          {/* Auth layout without standard nav/footer */}
+          {/* Layouts without standard nav/footer */}
           <Route path="/join" element={<Join />} />
+          <Route path="/admin" element={<Admin />} />
           
           {/* Main Layout */}
           <Route
@@ -36,6 +39,7 @@ const App: React.FC = () => {
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/rooms" element={<Rooms />} />
+                    <Route path="/rooms/:id" element={<RoomDetails />} />
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/location" element={<Location />} />
                   </Routes>
