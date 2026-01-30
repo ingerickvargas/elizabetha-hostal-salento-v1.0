@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">
-            <h3 className="text-2xl font-display font-bold text-white mb-6">Hostal Elizabeta</h3>
+            <h3 className="text-2xl font-display font-bold text-white mb-6">Hostal Elizabetha</h3>
             <p className="text-slate-400 max-w-md leading-relaxed mb-6">
               {t('footer.desc')}
             </p>
@@ -20,7 +20,7 @@ const Footer: React.FC = () => {
                 <span className="material-icons-outlined text-lg">facebook</span>
               </a>
               <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors">
-                <span className="material-icons-outlined text-lg">camera_alt</span>
+                <span className="material-icons-outlined text-lg">instagram</span>
               </a>
             </div>
           </div>

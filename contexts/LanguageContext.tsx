@@ -113,7 +113,7 @@ const translations: Record<Language, Record<string, string>> = {
     'footer.links.sust': 'Sostenibilidad',
     'footer.links.policy': 'Política de Reserva',
     'footer.contact': 'Contacto',
-    'footer.rights': '© 2024 Hostal Elizabetha. Todos los derechos reservados.',
+    'footer.rights': '© 2026 Hostal Elizabetha. Todos los derechos reservados.',
 
     // Join / Booking
     'join.back': 'Volver al Inicio',
@@ -232,7 +232,7 @@ const translations: Record<Language, Record<string, string>> = {
     'footer.links.sust': 'Sustainability',
     'footer.links.policy': 'Booking Policy',
     'footer.contact': 'Contact Info',
-    'footer.rights': '© 2024 Hostal Elizabetha. All rights reserved. Designed with love in Salento.',
+    'footer.rights': '© 2026 Hostal Elizabetha. All rights reserved. Designed with love in Salento.',
 
     // Join / Booking
     'join.back': 'Back to Home',

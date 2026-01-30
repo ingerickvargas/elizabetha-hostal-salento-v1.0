@@ -186,7 +186,7 @@ const Home: React.FC = () => {
               <img 
                 alt="Interior of Hostal Elizabeta" 
                 className="rounded-3xl shadow-2xl relative z-10 w-full aspect-[4/5] object-cover hover:scale-[1.02] transition-transform duration-500" 
-                src="https://images.unsplash.com/photo-1582719478250-c89cae4df85b?auto=format&fit=crop&q=80&w=1000"
+                src="https://images.unsplash.com/photo-1561049933-c8fbef47b329?q=80&w=1530&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
               />
               <div className="absolute -bottom-10 -right-10 bg-secondary p-8 rounded-2xl shadow-2xl hidden lg:block z-20 max-w-[240px]">
                 <p className="text-white font-display italic text-lg leading-relaxed">"Warmth in every cup, home in every room."</p>

@@ -96,7 +96,7 @@ export const ROOMS: Room[] = [
 
 export const GALLERY_ITEMS: GalleryItem[] = [
   { id: 1, category: 'Architecture', category_es: 'Arquitectura', title: 'The Main Facade', title_es: 'La Fachada Principal', image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=800' },
-  { id: 2, category: 'Interiors', category_es: 'Interiores', title: 'The Central Patio', title_es: 'El Patio Central', image: 'https://images.unsplash.com/photo-1582719478250-c89cae4df85b?auto=format&fit=crop&q=80&w=800' },
+  { id: 2, category: 'Interiors', category_es: 'Interiores', title: 'The Central Patio', title_es: 'El Patio Central', image: 'https://images.unsplash.com/photo-1768593049340-6e50351b4b2f?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
   { id: 3, category: 'Region', category_es: 'Región', title: 'Valley Horizons', title_es: 'Horizontes del Valle', image: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=800' },
   { id: 4, category: 'Common Areas', category_es: 'Áreas Comunes', title: 'The Shared Kitchen', title_es: 'La Cocina Compartida', image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=800' },
   { id: 5, category: 'Accommodation', category_es: 'Alojamiento', title: 'Andean Suite Detail', title_es: 'Detalle Suite Andina', image: 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&q=80&w=800' },
