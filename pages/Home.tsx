@@ -1,7 +1,7 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ROOMS } from '../constants';
+import { ROOMS as DEFAULT_ROOMS } from '../constants';
 import { Room } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -11,13 +11,21 @@ const Home: React.FC = () => {
   const [guests, setGuests] = useState('2');
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [rooms, setRooms] = useState<Room[]>(DEFAULT_ROOMS);
   
   const { t, language } = useLanguage();
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const stored = localStorage.getItem('elizabeta_rooms');
+    if (stored) {
+      setRooms(JSON.parse(stored));
+    }
+  }, []);
+
   const handleCheckAvailability = () => {
     // Simple logic: filter rooms by capacity
-    const filtered = ROOMS.filter(room => room.capacity >= parseInt(guests));
+    const filtered = rooms.filter(room => room.capacity >= parseInt(guests));
     setAvailableRooms(filtered);
     setHasSearched(true);
     
@@ -186,7 +194,7 @@ const Home: React.FC = () => {
               <img 
                 alt="Interior of Hostal Elizabeta" 
                 className="rounded-3xl shadow-2xl relative z-10 w-full aspect-[4/5] object-cover hover:scale-[1.02] transition-transform duration-500" 
-                src="https://images.unsplash.com/photo-1561049933-c8fbef47b329?q=80&w=1530&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                src="https://images.unsplash.com/photo-1582719478250-c89cae4df85b?auto=format&fit=crop&q=80&w=1000"
               />
               <div className="absolute -bottom-10 -right-10 bg-secondary p-8 rounded-2xl shadow-2xl hidden lg:block z-20 max-w-[240px]">
                 <p className="text-white font-display italic text-lg leading-relaxed">"Warmth in every cup, home in every room."</p>

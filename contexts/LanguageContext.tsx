@@ -128,6 +128,10 @@ const translations: Record<Language, Record<string, string>> = {
     'join.home': 'Ir a la Página Principal',
     'join.hero.title': 'Escápate al Quindío',
     'join.hero.subtitle': 'Comienza tu viaje en el corazón del país cafetero.',
+	'join.fullname': 'Nombre Completo',
+	'join.email': 'Correo Electrónico',
+	'join.phone': 'Número de Teléfono',
+	'join.button.confirm': 'Confirmar y Reservar',
   },
   en: {
     // Navbar
@@ -247,6 +251,10 @@ const translations: Record<Language, Record<string, string>> = {
     'join.home': 'Go to Homepage',
     'join.hero.title': 'Escape to Quindío',
     'join.hero.subtitle': 'Begin your journey in the heart of coffee country.',
+	'join.fullname': 'Full Name',
+	'join.email': 'Email Address',
+	'join.phone': 'Phone Number',
+	'join.button.confirm': 'Confirm & Book',
   }
 };
 

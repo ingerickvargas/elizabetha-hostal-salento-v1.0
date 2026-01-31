@@ -1,11 +1,20 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ROOMS } from '../constants';
+import { ROOMS as DEFAULT_ROOMS } from '../constants';
+import { Room } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const Rooms: React.FC = () => {
   const { t, language } = useLanguage();
+  const [rooms, setRooms] = useState<Room[]>(DEFAULT_ROOMS);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('elizabeta_rooms');
+    if (stored) {
+      setRooms(JSON.parse(stored));
+    }
+  }, []);
 
   return (
     <div className="pt-32 pb-24 animate-in slide-in-from-bottom-8 duration-700">
@@ -19,7 +28,7 @@ const Rooms: React.FC = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-10">
-          {ROOMS.map((room) => (
+          {rooms.map((room) => (
             <div 
               key={room.id} 
               className="group bg-white dark:bg-zinc-800/50 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-zinc-800 flex flex-col"

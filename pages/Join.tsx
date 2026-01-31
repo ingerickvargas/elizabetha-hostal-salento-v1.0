@@ -12,7 +12,11 @@ const Join: React.FC = () => {
     checkIn: '',
     checkOut: '',
     guests: '2',
-    roomType: ROOMS[0].id
+    roomType: ROOMS[0].id,
+    // Add missing guest fields to state
+    name: '',
+    email: '',
+    phone: ''
   });
 
   const handleBookingSubmit = (e: React.FormEvent) => {
@@ -21,7 +25,7 @@ const Join: React.FC = () => {
     const selectedRoom = ROOMS.find(r => r.id === bookingData.roomType);
     const roomName = language === 'es' ? selectedRoom?.name_es || selectedRoom?.name : selectedRoom?.name;
     
-    // Create reservation object
+    // Fix: Add guestName, guestEmail, and guestPhone to satisfy the Reservation type
     const newReservation: Reservation = {
       id: Math.random().toString(36).substr(2, 9),
       roomId: bookingData.roomType,
@@ -29,6 +33,9 @@ const Join: React.FC = () => {
       checkIn: bookingData.checkIn,
       checkOut: bookingData.checkOut,
       guests: parseInt(bookingData.guests),
+      guestName: bookingData.name,
+      guestEmail: bookingData.email,
+      guestPhone: bookingData.phone,
       status: 'pending',
       createdAt: new Date().toISOString()
     };
@@ -131,6 +138,41 @@ const Join: React.FC = () => {
                       <option value="3">{t('home.search.guest3')}</option>
                       <option value="4">4 {t('join.guests')}</option>
                     </select>
+                  </div>
+
+                  {/* Add guest detail inputs to match Reservation requirement */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('join.fullname')}</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. Juan Perez"
+                      className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                      value={bookingData.name}
+                      onChange={(e) => setBookingData({...bookingData, name: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('join.email')}</label>
+                    <input 
+                      type="email" 
+                      required
+                      placeholder="juan@example.com"
+                      className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                      value={bookingData.email}
+                      onChange={(e) => setBookingData({...bookingData, email: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('join.phone')}</label>
+                    <input 
+                      type="tel" 
+                      required
+                      placeholder="+57 312..."
+                      className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                      value={bookingData.phone}
+                      onChange={(e) => setBookingData({...bookingData, phone: e.target.value})}
+                    />
                   </div>
 
                   <button 

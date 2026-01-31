@@ -1,23 +1,34 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ROOMS } from '../constants';
-import { Reservation } from '../types';
+import { ROOMS as DEFAULT_ROOMS } from '../constants';
+import { Room, Reservation } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const RoomDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const room = ROOMS.find(r => r.id === id);
   const { t, language } = useLanguage();
-
+  
+  const [room, setRoom] = useState<Room | undefined>(undefined);
   const [activeImg, setActiveImg] = useState(0);
   const [isBooked, setIsBooked] = useState(false);
+  const [bookingStep, setBookingStep] = useState(1);
   const [bookingData, setBookingData] = useState({
     checkIn: '',
     checkOut: '',
-    guests: '2'
+    guests: '2',
+    name: '',
+    email: '',
+    phone: ''
   });
+
+  useEffect(() => {
+    const stored = localStorage.getItem('elizabeta_rooms');
+    const roomsSource = stored ? JSON.parse(stored) : DEFAULT_ROOMS;
+    const foundRoom = (roomsSource as Room[]).find(r => r.id === id);
+    setRoom(foundRoom);
+  }, [id]);
 
   if (!room) {
     return (
@@ -34,6 +45,11 @@ const RoomDetails: React.FC = () => {
   const roomBathroom = language === 'es' ? room.bathroom_es : room.bathroom;
   const roomAmenity = language === 'es' ? room.amenity_es : room.amenity;
 
+  const handleNextStep = (e: React.FormEvent) => {
+    e.preventDefault();
+    setBookingStep(2);
+  };
+
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -44,6 +60,9 @@ const RoomDetails: React.FC = () => {
       checkIn: bookingData.checkIn,
       checkOut: bookingData.checkOut,
       guests: parseInt(bookingData.guests),
+      guestName: bookingData.name,
+      guestEmail: bookingData.email,
+      guestPhone: bookingData.phone,
       status: 'pending',
       createdAt: new Date().toISOString()
     };
@@ -145,62 +164,116 @@ const RoomDetails: React.FC = () => {
                       </div>
                     </div>
 
-                    <form onSubmit={handleBookingSubmit} className="space-y-6">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkin')}</label>
-                          <input 
-                            type="date" 
-                            required
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
-                            value={bookingData.checkIn}
-                            onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})}
-                          />
+                    {bookingStep === 1 ? (
+                      <form onSubmit={handleNextStep} className="space-y-6 animate-in fade-in duration-300">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkin')}</label>
+                            <input 
+                              type="date" 
+                              required
+                              className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                              value={bookingData.checkIn}
+                              onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkout')}</label>
+                            <input 
+                              type="date" 
+                              required
+                              className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                              value={bookingData.checkOut}
+                              onChange={(e) => setBookingData({...bookingData, checkOut: e.target.value})}
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkout')}</label>
-                          <input 
-                            type="date" 
-                            required
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
-                            value={bookingData.checkOut}
-                            onChange={(e) => setBookingData({...bookingData, checkOut: e.target.value})}
-                          />
-                        </div>
-                      </div>
 
-                      <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.guests')}</label>
-                        <select 
-                          className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm appearance-none"
-                          value={bookingData.guests}
-                          onChange={(e) => setBookingData({...bookingData, guests: e.target.value})}
+                        <div>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.guests')}</label>
+                          <select 
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm appearance-none"
+                            value={bookingData.guests}
+                            onChange={(e) => setBookingData({...bookingData, guests: e.target.value})}
+                          >
+                            <option value="1">{t('home.search.guest1')}</option>
+                            <option value="2">{t('home.search.guest2')}</option>
+                            <option value="3">{t('home.search.guest3')}</option>
+                            <option value="4">4 Guests</option>
+                          </select>
+                        </div>
+
+                        <button 
+                          type="submit" 
+                          className="w-full bg-primary text-white py-5 rounded-2xl font-bold text-lg hover:bg-opacity-90 shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
                         >
-                          <option value="1">{t('home.search.guest1')}</option>
-                          <option value="2">{t('home.search.guest2')}</option>
-                          <option value="3">{t('home.search.guest3')}</option>
-                          <option value="4">4 Guests</option>
-                        </select>
-                      </div>
-
-                      <button 
-                        type="submit" 
-                        className="w-full bg-secondary text-white py-5 rounded-2xl font-bold text-lg hover:bg-opacity-90 shadow-xl shadow-secondary/20 transition-all active:scale-[0.98]"
-                      >
-                        {t('details.book.title')}
-                      </button>
-
-                      <div className="pt-4 space-y-3">
-                        <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
-                          <span>{t('details.book.fee')}</span>
-                          <span>$0.00</span>
+                          {t('details.book.title')}
+                        </button>
+                      </form>
+                    ) : (
+                      <form onSubmit={handleBookingSubmit} className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                        <button 
+                          type="button" 
+                          onClick={() => setBookingStep(1)}
+                          className="text-xs font-bold text-primary flex items-center gap-1 hover:underline mb-4"
+                        >
+                          <span className="material-symbols-outlined text-sm">arrow_back</span>
+                          Back to Dates
+                        </button>
+                        
+                        <div>
+                          <label className="block text-xs font-bold tracking-wider text-slate-500 mb-2">{t('join.fullname')}</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="e.g. Juan Perez"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                            value={bookingData.name}
+                            onChange={(e) => setBookingData({...bookingData, name: e.target.value})}
+                          />
                         </div>
-                        <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-zinc-800 pt-3">
-                          <span className="text-slate-900 dark:text-white">{t('details.book.total')}</span>
-                          <span className="text-slate-900 dark:text-white">${room.price}</span>
+                        <div>
+                          <label className="block text-xs font-bold tracking-wider text-slate-500 mb-2">{t('join.email')}</label>
+                          <input 
+                            type="email" 
+                            required
+                            placeholder="juan@example.com"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                            value={bookingData.email}
+                            onChange={(e) => setBookingData({...bookingData, email: e.target.value})}
+                          />
                         </div>
+                        <div>
+                          <label className="block text-xs font-bold tracking-wider text-slate-500 mb-2">{t('join.phone')}</label>
+                          <input 
+                            type="tel" 
+                            required
+                            placeholder="+57 312..."
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                            value={bookingData.phone}
+                            onChange={(e) => setBookingData({...bookingData, phone: e.target.value})}
+                          />
+                        </div>
+
+                        <button 
+                          type="submit" 
+                          className="w-full bg-secondary text-white py-5 rounded-2xl font-bold text-lg hover:bg-opacity-90 shadow-xl shadow-secondary/20 transition-all active:scale-[0.98]"
+                        >
+                          {t('join.button.confirm')}
+                        </button>
+                      </form>
+                    )}
+
+                    <div className="pt-4 space-y-3">
+                      <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
+                        <span>{t('details.book.fee')}</span>
+                        <span>$0.00</span>
                       </div>
-                    </form>
+                      <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-zinc-800 pt-3">
+                        <span className="text-slate-900 dark:text-white">{t('details.book.total')}</span>
+                        <span className="text-slate-900 dark:text-white">${room.price}</span>
+                      </div>
+                    </div>
                   </>
                 ) : (
                   <div className="text-center py-4 animate-in zoom-in-95 duration-500">
@@ -218,6 +291,10 @@ const RoomDetails: React.FC = () => {
                        <div className="flex justify-between items-center text-sm">
                          <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Dates</span>
                          <span className="font-bold text-slate-800 dark:text-slate-200">{bookingData.checkIn} - {bookingData.checkOut}</span>
+                       </div>
+                       <div className="flex justify-between items-center text-sm">
+                         <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Guest</span>
+                         <span className="font-bold text-slate-800 dark:text-slate-200">{bookingData.name}</span>
                        </div>
                     </div>
 

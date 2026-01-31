@@ -44,6 +44,9 @@ export interface Reservation {
   checkIn: string;
   checkOut: string;
   guests: number;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
 }
