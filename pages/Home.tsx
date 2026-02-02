@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ROOMS as DEFAULT_ROOMS } from '../constants';
 import { Room } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { isDateRangeAvailable } from '../utils/availability';
 
 const Home: React.FC = () => {
   const [checkIn, setCheckIn] = useState('');
@@ -24,8 +25,26 @@ const Home: React.FC = () => {
   }, []);
 
   const handleCheckAvailability = () => {
-    // Simple logic: filter rooms by capacity
-    const filtered = rooms.filter(room => room.capacity >= parseInt(guests));
+    if (!checkIn || !checkOut) {
+       alert(language === 'es' ? 'Por favor seleccione las fechas.' : 'Please select check-in and check-out dates.');
+       return;
+    }
+    
+    if (checkOut <= checkIn) {
+      alert(language === 'es' ? 'La fecha de salida debe ser posterior a la de llegada.' : 'Check-out date must be after check-in date.');
+      return;
+    }
+
+    // Fetch current reservations
+    const reservations = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
+
+    // Filter rooms by capacity AND availability
+    const filtered = rooms.filter(room => {
+        const capacityFits = room.capacity >= parseInt(guests);
+        const isAvailable = isDateRangeAvailable(room.id, checkIn, checkOut, reservations);
+        return capacityFits && isAvailable;
+    });
+
     setAvailableRooms(filtered);
     setHasSearched(true);
     
@@ -48,14 +67,16 @@ const Home: React.FC = () => {
             className="w-full h-full object-cover scale-105"
             poster="https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=2000"
           >
-            <source src="https://videos.pexels.com/video-files/2454661/2454661-hd_1920_1080_30fps.mp4" type="video/mp4" />
+            {/* Using a video that resembles the Salento/Cocora Valley landscape with green mountains and clouds */}
+            <source src="https://videos.pexels.com/video-files/16263006/uhd_24fps.mp4" type="video/mp4" />
           </video>
-          <div className="absolute inset-0 hero-gradient bg-black/40"></div>
+          {/* Subtle overlay for text readability */}
+          <div className="absolute inset-0 bg-black/30"></div>
         </div>
         <div className="relative z-10 text-center px-4">
           <h2 className="text-white font-handwritten text-4xl md:text-6xl mb-4 drop-shadow-md">{t('home.hero.welcome')}</h2>
           <h1 className="text-white font-display text-5xl md:text-8xl font-bold mb-6 tracking-tight drop-shadow-lg">{t('home.hero.title')}</h1>
-          <p className="text-white/90 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light drop-shadow">
+          <p className="text-white/90 text-lg md:text-xl max-w-2xl mx-auto mb-10 font-light drop-shadow-md">
             {t('home.hero.subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -75,8 +96,8 @@ const Home: React.FC = () => {
         </div>
 
         {/* Floating Search Bar */}
-        <div className="absolute bottom-0 left-0 w-full px-4 pb-12 translate-y-6 md:translate-y-12">
-          <div className="max-w-6xl mx-auto bg-white dark:bg-zinc-900 shadow-2xl rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-end md:items-center gap-6 border border-slate-100 dark:border-zinc-800">
+        <div className="absolute bottom-0 left-0 w-full px-4 pb-12 translate-y-6 md:translate-y-12 z-20">
+          <div className="max-w-6xl mx-auto bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md shadow-2xl rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-end md:items-center gap-6 border-b border-slate-200 dark:border-zinc-800">
             <div className="flex-1 w-full">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkin')}</label>
               <div className="relative">
@@ -84,6 +105,7 @@ const Home: React.FC = () => {
                 <input 
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary" 
                   type="date" 
+                  min={new Date().toISOString().split('T')[0]}
                   value={checkIn}
                   onChange={(e) => setCheckIn(e.target.value)}
                 />
@@ -95,7 +117,8 @@ const Home: React.FC = () => {
                 <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">calendar_today</span>
                 <input 
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary" 
-                  type="date" 
+                  type="date"
+                  min={checkIn || new Date().toISOString().split('T')[0]} 
                   value={checkOut}
                   onChange={(e) => setCheckOut(e.target.value)}
                 />
@@ -175,11 +198,11 @@ const Home: React.FC = () => {
             ))}
           </div>
 
-          {availableRooms.length === 0 && (
-            <div className="text-center py-20 bg-slate-50 dark:bg-zinc-900 rounded-[2rem] border border-dashed border-slate-200 dark:border-zinc-800">
-              <span className="material-icons-outlined text-6xl text-slate-300 mb-4">sentiment_dissatisfied</span>
-              <h3 className="text-xl font-bold text-slate-600 dark:text-slate-400">No rooms match your criteria</h3>
-              <p className="text-slate-500 mt-2">Try adjusting the number of guests or check different dates.</p>
+          {hasSearched && availableRooms.length === 0 && (
+            <div className="text-center py-20 bg-slate-50 dark:bg-zinc-900 rounded-[2rem] border border-dashed border-slate-200 dark:border-zinc-800 animate-in zoom-in-95 duration-300">
+              <span className="material-icons-outlined text-6xl text-slate-300 mb-4">event_busy</span>
+              <h3 className="text-xl font-bold text-slate-600 dark:text-slate-400">No rooms available for these dates</h3>
+              <p className="text-slate-500 mt-2">Some rooms might be booked. Please try different dates.</p>
             </div>
           )}
         </div>

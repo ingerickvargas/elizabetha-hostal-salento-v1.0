@@ -4,10 +4,13 @@ import { Link } from 'react-router-dom';
 import { ROOMS } from '../constants';
 import { Reservation } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { sendConfirmationEmail } from '../utils/mockEmailService';
+import { isDateRangeAvailable } from '../utils/availability';
 
 const Join: React.FC = () => {
   const { t, language } = useLanguage();
   const [isBooked, setIsBooked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingData, setBookingData] = useState({
     checkIn: '',
     checkOut: '',
@@ -19,8 +22,25 @@ const Join: React.FC = () => {
     phone: ''
   });
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (bookingData.checkOut <= bookingData.checkIn) {
+      alert(language === 'es' ? 'La fecha de salida debe ser posterior a la de llegada.' : 'Check-out date must be after check-in date.');
+      return;
+    }
+
+    const reservations = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
+    const isAvailable = isDateRangeAvailable(bookingData.roomType, bookingData.checkIn, bookingData.checkOut, reservations);
+
+    if (!isAvailable) {
+        alert(language === 'es' 
+            ? 'La habitación seleccionada no está disponible para estas fechas.' 
+            : 'The selected room is not available for these dates.');
+        return;
+    }
+
+    setIsSubmitting(true);
     
     const selectedRoom = ROOMS.find(r => r.id === bookingData.roomType);
     const roomName = language === 'es' ? selectedRoom?.name_es || selectedRoom?.name : selectedRoom?.name;
@@ -44,6 +64,13 @@ const Join: React.FC = () => {
     const existing = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
     localStorage.setItem('elizabeta_reservations', JSON.stringify([newReservation, ...existing]));
 
+    try {
+      await sendConfirmationEmail(newReservation);
+    } catch (error) {
+      console.error("Failed to send email", error);
+    }
+
+    setIsSubmitting(false);
     setIsBooked(true);
   };
 
@@ -97,6 +124,7 @@ const Join: React.FC = () => {
                         type="date" 
                         required
                         className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                        min={new Date().toISOString().split('T')[0]}
                         value={bookingData.checkIn}
                         onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})}
                       />
@@ -107,6 +135,7 @@ const Join: React.FC = () => {
                         type="date" 
                         required
                         className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                        min={bookingData.checkIn || new Date().toISOString().split('T')[0]}
                         value={bookingData.checkOut}
                         onChange={(e) => setBookingData({...bookingData, checkOut: e.target.value})}
                       />
@@ -150,6 +179,7 @@ const Join: React.FC = () => {
                       className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
                       value={bookingData.name}
                       onChange={(e) => setBookingData({...bookingData, name: e.target.value})}
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div>
@@ -161,6 +191,7 @@ const Join: React.FC = () => {
                       className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
                       value={bookingData.email}
                       onChange={(e) => setBookingData({...bookingData, email: e.target.value})}
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div>
@@ -172,14 +203,16 @@ const Join: React.FC = () => {
                       className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
                       value={bookingData.phone}
                       onChange={(e) => setBookingData({...bookingData, phone: e.target.value})}
+                      disabled={isSubmitting}
                     />
                   </div>
 
                   <button 
                     type="submit" 
-                    className="w-full bg-secondary text-white py-4 rounded-xl font-bold text-base hover:bg-opacity-90 shadow-lg shadow-secondary/20 transition-all active:scale-[0.98]"
+                    disabled={isSubmitting}
+                    className={`w-full bg-secondary text-white py-4 rounded-xl font-bold text-base shadow-lg shadow-secondary/20 transition-all ${isSubmitting ? 'opacity-75 cursor-not-allowed' : 'hover:bg-opacity-90 active:scale-[0.98]'}`}
                   >
-                    {t('join.button')}
+                    {isSubmitting ? 'Processing...' : t('join.button.confirm')}
                   </button>
                 </form>
               </div>
@@ -229,7 +262,7 @@ const Join: React.FC = () => {
           </section>
 
           <div className="mt-8 text-center">
-            <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold">Hostal Elizabeta &copy; 2024</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold">Hostal Elizabetha &copy; 2026</p>
           </div>
         </div>
       </div>

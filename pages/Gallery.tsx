@@ -1,34 +1,38 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GALLERY_ITEMS } from '../constants';
+import { GalleryItem } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const Gallery: React.FC = () => {
   const { t, language } = useLanguage();
   const [filter, setFilter] = useState('All');
+  const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
+
+  // Prevent scrolling when modal is open
+  useEffect(() => {
+    if (selectedImage) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedImage]);
   
   // Create localized categories dynamically
   const allCategory = t('gallery.all');
-  const categories = [allCategory, 'Architecture', 'Interiors', 'Region', 'Experience', 'Accommodation', 'Common Areas'];
+  
+  // Initialize filter correctly if needed, though simple string comparison works if we are consistent
+  // Note: logic below attempts to handle language switching by checking against dynamic allCategory
 
-  const getLocalizedCategory = (cat: string) => {
-     if (cat === allCategory) return allCategory;
-     // Map specific category names if needed, or rely on them being keys in the item
-     // For this simple implementation, we will filter based on the English category but display localized names if available
-     return cat; 
-  };
-
-  const filteredItems = filter === allCategory 
+  const filteredItems = filter === 'All' || filter === allCategory 
     ? GALLERY_ITEMS 
     : GALLERY_ITEMS.filter(item => {
-        // This is a simplified filter logic. In a real app, we might map IDs.
-        // Here we try to match the category either in English or Spanish.
         const catEn = item.category;
         const catEs = item.category_es || item.category;
         
-        // We need to know which language the filter button is displaying
-        // But the filter state holds the string displayed on the button.
-        // Let's reverse map or just check if the item has this category string.
         if (language === 'es') return catEs === filter;
         return catEn === filter;
     });
@@ -52,7 +56,7 @@ const Gallery: React.FC = () => {
                 key={cat}
                 onClick={() => setFilter(cat)}
                 className={`px-8 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap border ${
-                  filter === cat 
+                  filter === cat || (filter === 'All' && cat === allCategory)
                   ? 'bg-secondary text-white border-secondary shadow-lg' 
                   : 'bg-white dark:bg-zinc-800 text-slate-500 border-slate-200 dark:border-zinc-700 hover:border-primary'
                 }`}
@@ -67,6 +71,7 @@ const Gallery: React.FC = () => {
           {filteredItems.map((item) => (
             <div 
               key={item.id} 
+              onClick={() => setSelectedImage(item)}
               className="relative group cursor-pointer overflow-hidden rounded-[2rem] shadow-xl break-inside-avoid"
             >
               <img 
@@ -101,6 +106,40 @@ const Gallery: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Image Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button 
+            className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10"
+            onClick={() => setSelectedImage(null)}
+          >
+            <span className="material-symbols-outlined text-4xl">close</span>
+          </button>
+
+          <div 
+            className="relative max-w-7xl w-full max-h-screen flex flex-col items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img 
+              src={selectedImage.image} 
+              alt={selectedImage.title} 
+              className="max-h-[85vh] w-auto object-contain rounded-xl shadow-2xl mb-6"
+            />
+            <div className="text-center animate-in slide-in-from-bottom-4 duration-500">
+              <span className="text-primary font-bold uppercase tracking-widest text-sm block mb-2">
+                {language === 'es' ? selectedImage.category_es : selectedImage.category}
+              </span>
+              <h3 className="text-3xl font-display italic text-white">
+                {language === 'es' ? selectedImage.title_es : selectedImage.title}
+              </h3>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

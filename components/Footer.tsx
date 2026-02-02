@@ -38,15 +38,15 @@ const Footer: React.FC = () => {
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-sm">
                 <span className="material-icons-outlined text-primary text-xl">place</span>
-                <span>Calle 5 #4-21,<br/>Salento, Quindío, Colombia</span>
+                <span>Carrera 4 # 3-16, Casa 5<br/>Salento, Quindío, Colombia</span>
               </li>
               <li className="flex items-center gap-3 text-sm">
                 <span className="material-icons-outlined text-primary text-xl">phone</span>
-                <span>+57 (312) 456-7890</span>
+                <span>+57 (322) 537-9425</span>
               </li>
               <li className="flex items-center gap-3 text-sm">
                 <span className="material-icons-outlined text-primary text-xl">email</span>
-                <span>hola@hostalelizabeta.com</span>
+                <span>elizabethahostal@gmail.com</span>
               </li>
             </ul>
           </div>

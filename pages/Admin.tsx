@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Reservation, Room, RoomFeature } from '../types';
 import { ROOMS as DEFAULT_ROOMS } from '../constants';
+import { sendAcceptanceEmail } from '../utils/mockEmailService';
 
 type AdminSection = 'dashboard' | 'reservations' | 'rooms' | 'settings';
 
@@ -36,12 +36,22 @@ const Admin: React.FC = () => {
     }
   };
 
-  const updateStatus = (id: string, newStatus: 'pending' | 'accepted' | 'rejected') => {
+  const updateStatus = async (id: string, newStatus: 'pending' | 'accepted' | 'rejected') => {
+    const reservation = reservations.find(r => r.id === id);
+
     const updated = reservations.map(res => 
       res.id === id ? { ...res, status: newStatus } : res
     );
     setReservations(updated);
     localStorage.setItem('elizabeta_reservations', JSON.stringify(updated));
+
+    if (newStatus === 'accepted' && reservation) {
+      try {
+        await sendAcceptanceEmail(reservation);
+      } catch (err) {
+        console.error("Failed to send acceptance email", err);
+      }
+    }
   };
 
   const handleSaveRoom = (e: React.FormEvent) => {
@@ -73,11 +83,7 @@ const Admin: React.FC = () => {
       longDescription: 'Detailed description of the room and its amenities.',
       longDescription_es: 'Descripción detallada de la habitación y sus comodidades.',
       image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=800',
-      galleryImages: [
-        'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&q=80&w=1200',
-        'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&q=80&w=1200',
-        'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&q=80&w=1200'
-      ],
+      galleryImages: [],
       tag: 'From $50/night',
       tag_es: 'Desde $50/noche',
       size: '20m²',
@@ -124,6 +130,34 @@ const Admin: React.FC = () => {
       ...editingRoom,
       features: editingRoom.features.filter((_, i) => i !== index)
     });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, isGallery: boolean) => {
+    if (!editingRoom || !e.target.files) return;
+    
+    const files = Array.from(e.target.files);
+    
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setEditingRoom(prev => {
+          if (!prev) return null;
+          if (isGallery) {
+            return { ...prev, galleryImages: [...prev.galleryImages, result] };
+          } else {
+            return { ...prev, image: result };
+          }
+        });
+      };
+      reader.readAsDataURL(file as Blob);
+    });
+  };
+
+  const removeGalleryImage = (index: number) => {
+    if (!editingRoom) return;
+    const newGallery = editingRoom.galleryImages.filter((_, i) => i !== index);
+    setEditingRoom({ ...editingRoom, galleryImages: newGallery });
   };
 
   const getStatusBadge = (status: string) => {
@@ -452,14 +486,68 @@ const Admin: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Cover Image URL</label>
-                    <input 
-                      type="url" 
-                      value={editingRoom.image}
-                      onChange={e => setEditingRoom({...editingRoom, image: e.target.value})}
-                      className="w-full px-5 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl text-sm"
-                      required
-                    />
+                    <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Cover Image</label>
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={editingRoom.image}
+                          onChange={e => setEditingRoom({...editingRoom, image: e.target.value})}
+                          placeholder="Image URL"
+                          className="flex-grow px-5 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl text-sm"
+                        />
+                         <label className="cursor-pointer bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-300 px-4 py-3 rounded-xl hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors">
+                          <span className="material-symbols-outlined text-xl">upload_file</span>
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, false)} 
+                            className="hidden" 
+                          />
+                        </label>
+                      </div>
+                      {editingRoom.image && (
+                         <div className="h-32 w-full rounded-xl overflow-hidden bg-slate-50">
+                            <img src={editingRoom.image} alt="Cover Preview" className="w-full h-full object-cover" />
+                         </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Gallery Section */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                       <label className="block text-xs font-bold uppercase text-slate-400">Gallery Images</label>
+                       <label className="cursor-pointer text-xs font-bold text-primary flex items-center gap-1 hover:underline">
+                          <span className="material-symbols-outlined text-sm">add_photo_alternate</span> Add Images
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => handleImageUpload(e, true)} 
+                            className="hidden" 
+                          />
+                       </label>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {editingRoom.galleryImages.map((img, idx) => (
+                        <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group">
+                           <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                           <button 
+                              type="button"
+                              onClick={() => removeGalleryImage(idx)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                           >
+                             <span className="material-symbols-outlined text-xs">close</span>
+                           </button>
+                        </div>
+                      ))}
+                      {editingRoom.galleryImages.length === 0 && (
+                        <div className="col-span-3 py-6 text-center border-2 border-dashed border-slate-100 dark:border-zinc-800 rounded-xl text-slate-400 text-xs">
+                          No images in gallery
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 

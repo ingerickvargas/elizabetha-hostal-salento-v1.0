@@ -4,6 +4,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ROOMS as DEFAULT_ROOMS } from '../constants';
 import { Room, Reservation } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { sendConfirmationEmail } from '../utils/mockEmailService';
+import { isDateRangeAvailable, getBookedRanges } from '../utils/availability';
 
 const RoomDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,7 +15,9 @@ const RoomDetails: React.FC = () => {
   const [room, setRoom] = useState<Room | undefined>(undefined);
   const [activeImg, setActiveImg] = useState(0);
   const [isBooked, setIsBooked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingStep, setBookingStep] = useState(1);
+  const [bookedDates, setBookedDates] = useState<{start: string, end: string}[]>([]);
   const [bookingData, setBookingData] = useState({
     checkIn: '',
     checkOut: '',
@@ -28,6 +32,11 @@ const RoomDetails: React.FC = () => {
     const roomsSource = stored ? JSON.parse(stored) : DEFAULT_ROOMS;
     const foundRoom = (roomsSource as Room[]).find(r => r.id === id);
     setRoom(foundRoom);
+
+    if (foundRoom) {
+        const reservations = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
+        setBookedDates(getBookedRanges(foundRoom.id, reservations));
+    }
   }, [id]);
 
   if (!room) {
@@ -47,11 +56,32 @@ const RoomDetails: React.FC = () => {
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!bookingData.checkIn || !bookingData.checkOut) {
+       alert(language === 'es' ? 'Por favor seleccione las fechas.' : 'Please select check-in and check-out dates.');
+       return;
+    }
+
+    if (bookingData.checkOut <= bookingData.checkIn) {
+      alert(language === 'es' ? 'La fecha de salida debe ser posterior a la de llegada.' : 'Check-out date must be after check-in date.');
+      return;
+    }
+
+    const reservations = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
+    const isAvailable = isDateRangeAvailable(room.id, bookingData.checkIn, bookingData.checkOut, reservations);
+
+    if (!isAvailable) {
+        alert(language === 'es' 
+            ? 'Las fechas seleccionadas no están disponibles para esta habitación. Por favor revise el calendario de fechas reservadas.' 
+            : 'The selected dates are not available for this room. Please check the booked dates list.');
+        return;
+    }
+
     setBookingStep(2);
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     const newReservation: Reservation = {
       id: Math.random().toString(36).substr(2, 9),
@@ -70,6 +100,13 @@ const RoomDetails: React.FC = () => {
     const existing = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
     localStorage.setItem('elizabeta_reservations', JSON.stringify([newReservation, ...existing]));
 
+    try {
+      await sendConfirmationEmail(newReservation);
+    } catch (error) {
+      console.error("Failed to send email", error);
+    }
+
+    setIsSubmitting(false);
     setIsBooked(true);
   };
 
@@ -173,6 +210,7 @@ const RoomDetails: React.FC = () => {
                               type="date" 
                               required
                               className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                              min={new Date().toISOString().split('T')[0]}
                               value={bookingData.checkIn}
                               onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})}
                             />
@@ -183,6 +221,7 @@ const RoomDetails: React.FC = () => {
                               type="date" 
                               required
                               className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
+                              min={bookingData.checkIn || new Date().toISOString().split('T')[0]}
                               value={bookingData.checkOut}
                               onChange={(e) => setBookingData({...bookingData, checkOut: e.target.value})}
                             />
@@ -203,6 +242,19 @@ const RoomDetails: React.FC = () => {
                           </select>
                         </div>
 
+                        {bookedDates.length > 0 && (
+                          <div className="bg-slate-50 dark:bg-zinc-800/50 p-4 rounded-xl border border-slate-100 dark:border-zinc-700">
+                            <span className="text-[10px] font-bold uppercase text-red-400 mb-2 block">Unavailable Dates</span>
+                            <div className="flex flex-wrap gap-2">
+                                {bookedDates.map((range, idx) => (
+                                    <span key={idx} className="text-xs bg-white dark:bg-zinc-800 px-2 py-1 rounded-md text-slate-500 shadow-sm border border-slate-100 dark:border-zinc-700">
+                                        {new Date(range.start).toLocaleDateString(undefined, {month:'short', day:'numeric'})} - {new Date(range.end).toLocaleDateString(undefined, {month:'short', day:'numeric'})}
+                                    </span>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+
                         <button 
                           type="submit" 
                           className="w-full bg-primary text-white py-5 rounded-2xl font-bold text-lg hover:bg-opacity-90 shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
@@ -215,14 +267,15 @@ const RoomDetails: React.FC = () => {
                         <button 
                           type="button" 
                           onClick={() => setBookingStep(1)}
-                          className="text-xs font-bold text-primary flex items-center gap-1 hover:underline mb-4"
+                          disabled={isSubmitting}
+                          className="text-xs font-bold text-primary flex items-center gap-1 hover:underline mb-4 disabled:opacity-50"
                         >
                           <span className="material-symbols-outlined text-sm">arrow_back</span>
                           Back to Dates
                         </button>
                         
                         <div>
-                          <label className="block text-xs font-bold tracking-wider text-slate-500 mb-2">{t('join.fullname')}</label>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('join.fullname')}</label>
                           <input 
                             type="text" 
                             required
@@ -230,10 +283,11 @@ const RoomDetails: React.FC = () => {
                             className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
                             value={bookingData.name}
                             onChange={(e) => setBookingData({...bookingData, name: e.target.value})}
+                            disabled={isSubmitting}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-bold tracking-wider text-slate-500 mb-2">{t('join.email')}</label>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('join.email')}</label>
                           <input 
                             type="email" 
                             required
@@ -241,10 +295,11 @@ const RoomDetails: React.FC = () => {
                             className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
                             value={bookingData.email}
                             onChange={(e) => setBookingData({...bookingData, email: e.target.value})}
+                            disabled={isSubmitting}
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-bold tracking-wider text-slate-500 mb-2">{t('join.phone')}</label>
+                          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('join.phone')}</label>
                           <input 
                             type="tel" 
                             required
@@ -252,14 +307,16 @@ const RoomDetails: React.FC = () => {
                             className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
                             value={bookingData.phone}
                             onChange={(e) => setBookingData({...bookingData, phone: e.target.value})}
+                            disabled={isSubmitting}
                           />
                         </div>
 
                         <button 
                           type="submit" 
-                          className="w-full bg-secondary text-white py-5 rounded-2xl font-bold text-lg hover:bg-opacity-90 shadow-xl shadow-secondary/20 transition-all active:scale-[0.98]"
+                          disabled={isSubmitting}
+                          className={`w-full bg-secondary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-secondary/20 transition-all ${isSubmitting ? 'opacity-75 cursor-not-allowed' : 'hover:bg-opacity-90 active:scale-[0.98]'}`}
                         >
-                          {t('join.button.confirm')}
+                          {isSubmitting ? 'Processing...' : t('join.button.confirm')}
                         </button>
                       </form>
                     )}
