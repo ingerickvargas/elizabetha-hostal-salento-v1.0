@@ -1,85 +1,98 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ROOMS } from '../constants';
-import { Reservation } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { sendConfirmationEmail } from '../utils/mockEmailService';
-import { isDateRangeAvailable } from '../utils/availability';
+import { api } from '../src/lib/api';
+import { Room } from '../types';
+import { DateRangePicker } from '../components/DateRangePicker';
 
 const Join: React.FC = () => {
   const { t, language } = useLanguage();
   const [isBooked, setIsBooked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState(''); 
+  const [bookedRanges, setBookedRanges] = useState<any[]>([]);
+  const [range, setRange] = useState<any>(undefined);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [bookingData, setBookingData] = useState({
-    checkIn: '',
-    checkOut: '',
-    guests: '2',
-    roomType: ROOMS[0].id,
-    // Add missing guest fields to state
-    name: '',
-    email: '',
-    phone: ''
+	checkIn: '',
+	checkOut: '',
+	guests: '2',
+	roomType: '',
+	name: '',
+	email: '',
+	phone: ''
   });
 
-  const handleBookingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (bookingData.checkOut <= bookingData.checkIn) {
-      alert(language === 'es' ? 'La fecha de salida debe ser posterior a la de llegada.' : 'Check-out date must be after check-in date.');
-      return;
-    }
+  React.useEffect(() => {
+	const loadBooked = async () => {
+		if (!bookingData.roomType) return;
+		const res = await fetch(`http://localhost:3001/api/booked-dates?roomId=${bookingData.roomType}`);
+		setBookedRanges(await res.json());
+	};
+	loadBooked();
+	}, [bookingData.roomType]);
 
-    const reservations = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
-    const isAvailable = isDateRangeAvailable(bookingData.roomType, bookingData.checkIn, bookingData.checkOut, reservations);
+	const handleBookingSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setAvailabilityError('');
 
-    if (!isAvailable) {
-        alert(language === 'es' 
-            ? 'La habitación seleccionada no está disponible para estas fechas.' 
-            : 'The selected room is not available for these dates.');
-        return;
-    }
+		if (bookingData.checkOut <= bookingData.checkIn) {
+			setAvailabilityError(
+			language === 'es'
+			? 'Las fechas de salida deben ser posteriores a las de llegada.'
+			: 'Check-out date must be after check-in date.'
+		);
+			return;
+		}
 
-    setIsSubmitting(true);
-    
-    const selectedRoom = ROOMS.find(r => r.id === bookingData.roomType);
-    const roomName = language === 'es' ? selectedRoom?.name_es || selectedRoom?.name : selectedRoom?.name;
-    
-    // Fix: Add guestName, guestEmail, and guestPhone to satisfy the Reservation type
-    const newReservation: Reservation = {
-      id: Math.random().toString(36).substr(2, 9),
-      roomId: bookingData.roomType,
-      roomName: roomName || 'Unknown Room',
-      checkIn: bookingData.checkIn,
-      checkOut: bookingData.checkOut,
-      guests: parseInt(bookingData.guests),
-      guestName: bookingData.name,
-      guestEmail: bookingData.email,
-      guestPhone: bookingData.phone,
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
+		setIsSubmitting(true);
 
-    // Save to localStorage
-    const existing = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
-    localStorage.setItem('elizabeta_reservations', JSON.stringify([newReservation, ...existing]));
+		try {
+			const availability = await api.checkAvailability(
+			bookingData.roomType,
+			bookingData.checkIn,
+			bookingData.checkOut
+			);
 
-    try {
-      await sendConfirmationEmail(newReservation);
-    } catch (error) {
-      console.error("Failed to send email", error);
-    }
+			if (!(availability as any).available) {
+			setAvailabilityError(
+				language === 'es'
+				? 'Las fechas seleccionadas no están disponibles.'
+				: 'Selected dates are not available.'
+			);
+			setIsSubmitting(false);
+			return;
+			}
 
-    setIsSubmitting(false);
-    setIsBooked(true);
-  };
+			await api.createBooking({
+			roomId: bookingData.roomType,
+			checkIn: bookingData.checkIn,
+			checkOut: bookingData.checkOut,
+			guests: Number(bookingData.guests),
+			guestName: bookingData.name,
+			guestEmail: bookingData.email,
+			guestPhone: bookingData.phone,
+			});
 
-  const selectedRoom = ROOMS.find(r => r.id === bookingData.roomType);
+			setIsBooked(true);
+
+		} catch (error) {
+			console.error(error);
+			setAvailabilityError(language === 'es'
+				? 'Error al crear la reserva.'
+				: 'Error creating booking.'
+			);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+  const selectedRoom = rooms.find(r => r.id === bookingData.roomType);
   const selectedRoomName = language === 'es' ? selectedRoom?.name_es || selectedRoom?.name : selectedRoom?.name;
 
   return (
     <div className="flex min-h-screen animate-in slide-in-from-right duration-700 bg-white dark:bg-zinc-950 overflow-hidden">
-      {/* Left Column: Visual */}
       <div className="hidden lg:block lg:w-1/2 relative">
         <img 
           alt="Salento Coffee Farm" 
@@ -100,11 +113,9 @@ const Join: React.FC = () => {
         </Link>
       </div>
 
-      {/* Right Column: Form Container */}
       <div className="w-full lg:w-1/2 flex flex-col items-center p-8 sm:p-20 overflow-y-auto no-scrollbar">
         <div className="max-w-md w-full py-12 flex flex-col justify-center min-h-full">
           
-          {/* Booking Section */}
           <section className="bg-slate-50 dark:bg-zinc-900/50 p-8 rounded-[2rem] border border-slate-100 dark:border-zinc-800 shadow-xl relative overflow-hidden">
             {!isBooked ? (
               <div className="animate-in fade-in duration-500">
@@ -117,28 +128,22 @@ const Join: React.FC = () => {
                 </div>
 
                 <form className="space-y-4" onSubmit={handleBookingSubmit}>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkin')}</label>
-                      <input 
-                        type="date" 
-                        required
-                        className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
-                        min={new Date().toISOString().split('T')[0]}
-                        value={bookingData.checkIn}
-                        onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkout')}</label>
-                      <input 
-                        type="date" 
-                        required
-                        className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
-                        min={bookingData.checkIn || new Date().toISOString().split('T')[0]}
-                        value={bookingData.checkOut}
-                        onChange={(e) => setBookingData({...bookingData, checkOut: e.target.value})}
-                      />
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.dates')}</label>
+						<DateRangePicker
+							value={range}
+							numberOfMonths={1}
+							onChange={(r) => {
+								setRange(r);
+								setBookingData(prev => ({
+								...prev,
+								checkIn: r?.from ? r.from.toISOString().slice(0,10) : "",
+								checkOut: r?.to ? r.to.toISOString().slice(0,10) : "",
+								}));
+							}}
+							bookedRanges={bookedRanges}
+						/>
                     </div>
                   </div>
 
@@ -149,9 +154,12 @@ const Join: React.FC = () => {
                       value={bookingData.roomType}
                       onChange={(e) => setBookingData({...bookingData, roomType: e.target.value})}
                     >
-                      {ROOMS.map(room => (
-                        <option key={room.id} value={room.id}>{language === 'es' ? room.name_es : room.name} - ${room.price}{t('details.book.night')}</option>
-                      ))}
+                    {rooms.map(room => (
+						<option key={room.id} value={room.id}>
+							{language === 'es' ? (room.name_es || room.name) : room.name}
+							{' '}– ${room.price}{t('details.book.night')}
+						</option>
+					))}
                     </select>
                   </div>
 
@@ -169,7 +177,6 @@ const Join: React.FC = () => {
                     </select>
                   </div>
 
-                  {/* Add guest detail inputs to match Reservation requirement */}
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('join.fullname')}</label>
                     <input 
@@ -206,7 +213,11 @@ const Join: React.FC = () => {
                       disabled={isSubmitting}
                     />
                   </div>
-
+					{availabilityError && (
+						<div className="bg-red-50 text-red-600 text-xs font-bold p-3 rounded-xl">
+							{availabilityError}
+						</div>
+					)}
                   <button 
                     type="submit" 
                     disabled={isSubmitting}

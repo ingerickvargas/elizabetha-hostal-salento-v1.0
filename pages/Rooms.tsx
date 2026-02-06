@@ -4,17 +4,36 @@ import { Link } from 'react-router-dom';
 import { ROOMS as DEFAULT_ROOMS } from '../constants';
 import { Room } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { api } from '../src/lib/api';
 
 const Rooms: React.FC = () => {
   const { t, language } = useLanguage();
   const [rooms, setRooms] = useState<Room[]>(DEFAULT_ROOMS);
 
   useEffect(() => {
-    const stored = localStorage.getItem('elizabeta_rooms');
-    if (stored) {
-      setRooms(JSON.parse(stored));
+  const load = async () => {
+    // 1) Si hay cache, lo mostramos de inmediato (mejor UX)
+    const cached = localStorage.getItem('elizabetha_rooms');
+    if (cached) {
+      try {
+        setRooms(JSON.parse(cached));
+      } catch {}
     }
-  }, []);
+
+    // 2) Traer desde API
+    try {
+      const data = await api.getRooms();
+      setRooms(data as any);
+      localStorage.setItem('elizabetha_rooms', JSON.stringify(data));
+    } catch (e) {
+      console.warn('API not available, using cache/constants', e);
+      // fallback final
+      if (!cached) setRooms(DEFAULT_ROOMS);
+    }
+  };
+
+  load();
+}, []);
 
   return (
     <div className="pt-32 pb-24 animate-in slide-in-from-bottom-8 duration-700">

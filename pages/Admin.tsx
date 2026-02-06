@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Reservation, Room, RoomFeature } from '../types';
-import { ROOMS as DEFAULT_ROOMS } from '../constants';
-import { sendAcceptanceEmail } from '../utils/mockEmailService';
+import { api, ApiBookingStatus, status, UiBookingStatus } from '../src/lib/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 type AdminSection = 'dashboard' | 'reservations' | 'rooms' | 'settings';
 
+const LS_TOKEN_KEY = 'elizabetha_admin_token';
+
 const Admin: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
+  const [token, setToken] = useState<string>(() => localStorage.getItem(LS_TOKEN_KEY) || '');
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => !!localStorage.getItem(LS_TOKEN_KEY));
+  const [email, setEmail] = useState('admin@elizabetha.local');
   const [password, setPassword] = useState('');
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -16,61 +19,104 @@ const Admin: React.FC = () => {
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [error, setError] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { language } = useLanguage();
 
-  // Initial load
-  useEffect(() => {
-    const storedRes = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
-    setReservations(storedRes);
+  	useEffect(() => {
+		if (!isLoggedIn || !token) return;
+		const load = async () => {
+			try {
+			const [roomsData, bookingsData] = await Promise.all([
+				api.adminGetRooms(token),
+				api.adminGetBookings(token),
+			]);
 
-    const storedRooms = JSON.parse(localStorage.getItem('elizabeta_rooms') || 'null');
-    setRooms(storedRooms || DEFAULT_ROOMS);
-  }, [isLoggedIn]);
+			setRooms(roomsData as any);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (username === 'admin' && password === 'admin') {
-      setIsLoggedIn(true);
-      setError('');
-    } else {
-      setError('Invalid credentials. Hint: use admin/admin');
+      // `api.adminGetBookings` already converts API status to UI form
+      setReservations(bookingsData as any);
+			} catch (e) {
+			console.error(e);
+			localStorage.removeItem(LS_TOKEN_KEY);
+			setToken('');
+			setIsLoggedIn(false);
+			setError('Sesión inválida. Inicia sesión nuevamente.');
+			}
+		};
+	load();
+	}, [isLoggedIn, token]);
+
+  	const handleLogin = async (e: React.FormEvent) => {
+		e.preventDefault();
+		try {
+			const res = await api.adminLogin(email, password);
+			const tkn = (res as any).token as string;
+
+			localStorage.setItem(LS_TOKEN_KEY, tkn);
+			setToken(tkn);
+			setIsLoggedIn(true);
+			setError('');
+		} catch (err) {
+			console.error(err);
+			setError('Credenciales inválidas.');
+		}
+	};
+
+  const updateStatus = async (id: string, uiStatus: UiBookingStatus) => {
+    try {
+      console.log("UI status:", uiStatus);
+      await api.updateBookingStatus(token, id, uiStatus);
+
+      const fresh = await api.adminGetBookings(token);
+      // adminGetBookings ya convierte los estados a minúsculas, no hace falta hacerlo de nuevo
+      setReservations(fresh as any);
+    } catch (err) {
+      console.error(err);
+      setError('No se pudo actualizar el estado de la reserva.');
     }
   };
 
-  const updateStatus = async (id: string, newStatus: 'pending' | 'accepted' | 'rejected') => {
-    const reservation = reservations.find(r => r.id === id);
+  const handleSaveRoom = async (e: React.FormEvent) => {
+	e.preventDefault();
+	if (!editingRoom) return;
 
-    const updated = reservations.map(res => 
-      res.id === id ? { ...res, status: newStatus } : res
-    );
-    setReservations(updated);
-    localStorage.setItem('elizabeta_reservations', JSON.stringify(updated));
+	try {
+		const exists = rooms.some(r => r.id === editingRoom.id);
+		if (!exists) {
+		setError('Crear habitaciones nuevas aún no está habilitado. (Falta endpoint POST en backend)');
+		return;
+		}
 
-    if (newStatus === 'accepted' && reservation) {
-      try {
-        await sendAcceptanceEmail(reservation);
-      } catch (err) {
-        console.error("Failed to send acceptance email", err);
-      }
-    }
-  };
+		await api.adminUpdateRoom(token, editingRoom.id, {
+		name: editingRoom.name,
+		name_es: editingRoom.name_es,
+		price: editingRoom.price,
+		description: editingRoom.description,
+		description_es: editingRoom.description_es,
+		longDescription: editingRoom.longDescription,
+		longDescription_es: editingRoom.longDescription_es,
+		image: editingRoom.image,
+		galleryImages: editingRoom.galleryImages,
+		tag: editingRoom.tag,
+		tag_es: editingRoom.tag_es,
+		size: editingRoom.size,
+		size_es: editingRoom.size_es,
+		bathroom: editingRoom.bathroom,
+		bathroom_es: editingRoom.bathroom_es,
+		amenity: editingRoom.amenity,
+		amenity_es: editingRoom.amenity_es,
+		features: editingRoom.features,
+		capacity: editingRoom.capacity,
+		});
 
-  const handleSaveRoom = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingRoom) return;
-
-    const exists = rooms.some(r => r.id === editingRoom.id);
-    let updatedRooms: Room[];
-    
-    if (exists) {
-      updatedRooms = rooms.map(r => r.id === editingRoom.id ? editingRoom : r);
-    } else {
-      updatedRooms = [...rooms, editingRoom];
-    }
-
-    setRooms(updatedRooms);
-    localStorage.setItem('elizabeta_rooms', JSON.stringify(updatedRooms));
-    setEditingRoom(null);
-  };
+		const roomsData = await api.adminGetRooms(token);
+		setRooms(roomsData as any);
+		setEditingRoom(null);
+		setError('');
+	} catch (err) {
+		console.error(err);
+		setError('No se pudo guardar la habitación.');
+	}
+	};
 
   const handleAddRoomClick = () => {
     const newRoom: Room = {
@@ -187,10 +233,10 @@ const Admin: React.FC = () => {
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">person</span>
                 <input 
                   type="text" 
-                  placeholder="Username"
+                  placeholder="Email"
                   className="w-full pl-12 pr-5 py-3.5 bg-slate-50 dark:bg-zinc-800 border-none rounded-2xl focus:ring-2 focus:ring-primary text-sm"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="relative">
@@ -265,7 +311,11 @@ const Admin: React.FC = () => {
               <span className="material-symbols-outlined text-xl">visibility</span>
               View Website
             </Link>
-            <button onClick={() => setIsLoggedIn(false)} className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all">
+            <button onClick={() => { 
+				localStorage.removeItem(LS_TOKEN_KEY); 
+				setToken(''); 
+				setIsLoggedIn(false);
+			}} className="w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-all">
               <span className="material-symbols-outlined text-xl">logout</span>
               Sign Out
             </button>
@@ -344,11 +394,11 @@ const Admin: React.FC = () => {
                     <div className="flex items-center gap-3 w-full md:w-auto">
                       {res.status === 'pending' ? (
                         <>
-                          <button onClick={() => updateStatus(res.id, 'accepted')} className="flex-1 md:flex-none bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm">Accept</button>
-                          <button onClick={() => updateStatus(res.id, 'rejected')} className="flex-1 md:flex-none bg-red-50 text-red-500 px-6 py-2.5 rounded-xl font-bold text-sm">Reject</button>
+                          <button onClick={() => updateStatus(res.id, "accepted")} className="flex-1 md:flex-none bg-primary text-white px-6 py-2.5 rounded-xl font-bold text-sm">Accept</button>
+                          <button onClick={() => updateStatus(res.id, "rejected")} className="flex-1 md:flex-none bg-red-50 text-red-500 px-6 py-2.5 rounded-xl font-bold text-sm">Reject</button>
                         </>
                       ) : (
-                        <button onClick={() => updateStatus(res.id, 'pending')} className="w-full text-slate-400 font-bold text-sm">Reset</button>
+                        <button onClick={() => updateStatus(res.id, "pending")} className="w-full text-slate-400 font-bold text-sm">Reset</button>
                       )}
                     </div>
                   </div>

@@ -1,23 +1,23 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ROOMS as DEFAULT_ROOMS } from '../constants';
-import { Room, Reservation } from '../types';
+import { Room } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { sendConfirmationEmail } from '../utils/mockEmailService';
-import { isDateRangeAvailable, getBookedRanges } from '../utils/availability';
+import { api } from '../src/lib/api';
+import { DateRangePicker } from '../components/DateRangePicker';
 
 const RoomDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
-  
   const [room, setRoom] = useState<Room | undefined>(undefined);
   const [activeImg, setActiveImg] = useState(0);
   const [isBooked, setIsBooked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingStep, setBookingStep] = useState(1);
-  const [bookedDates, setBookedDates] = useState<{start: string, end: string}[]>([]);
+  const [bookedRanges, setBookedRanges] = useState<any[]>([]);
+  const [range, setRange] = useState<any>(undefined);
+  const [availabilityError, setAvailabilityError] = useState(''); 
   const [bookingData, setBookingData] = useState({
     checkIn: '',
     checkOut: '',
@@ -28,16 +28,38 @@ const RoomDetails: React.FC = () => {
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem('elizabeta_rooms');
-    const roomsSource = stored ? JSON.parse(stored) : DEFAULT_ROOMS;
-    const foundRoom = (roomsSource as Room[]).find(r => r.id === id);
-    setRoom(foundRoom);
+	if (!id) return;
 
-    if (foundRoom) {
-        const reservations = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
-        setBookedDates(getBookedRanges(foundRoom.id, reservations));
-    }
-  }, [id]);
+	let cancelled = false;
+
+	const load = async () => {
+		try {
+		const rooms = await api.getRooms();
+		const found = (rooms as Room[]).find(r => String(r.id) === String(id));
+
+		if (cancelled) return;
+
+		setRoom(found);
+
+		if (found) {
+			const ranges = await api.getBookedDates(String(found.id));
+			if (cancelled) return;
+			setBookedRanges(ranges);
+		} else {
+			setBookedRanges([]);
+		}
+		} catch (e) {
+		console.error(e);
+		if (!cancelled) setBookedRanges([]);
+		}
+	};
+
+	load();
+
+	return () => {
+		cancelled = true;
+	};
+	}, [id]);
 
   if (!room) {
     return (
@@ -54,66 +76,85 @@ const RoomDetails: React.FC = () => {
   const roomBathroom = language === 'es' ? room.bathroom_es : room.bathroom;
   const roomAmenity = language === 'es' ? room.amenity_es : room.amenity;
 
-  const handleNextStep = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!bookingData.checkIn || !bookingData.checkOut) {
-       alert(language === 'es' ? 'Por favor seleccione las fechas.' : 'Please select check-in and check-out dates.');
-       return;
-    }
+  const handleNextStep = async (e: React.FormEvent) => {
+	e.preventDefault();
+	setAvailabilityError('');
 
-    if (bookingData.checkOut <= bookingData.checkIn) {
-      alert(language === 'es' ? 'La fecha de salida debe ser posterior a la de llegada.' : 'Check-out date must be after check-in date.');
-      return;
-    }
+	if (!bookingData.checkIn || !bookingData.checkOut) {
+		setAvailabilityError(
+			language === 'es'
+			? 'Debe seleccionar fechas de entrada y salida.'
+			: 'Please select check-in and check-out dates.'
+		);
+		return;
+	}
 
-    const reservations = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
-    const isAvailable = isDateRangeAvailable(room.id, bookingData.checkIn, bookingData.checkOut, reservations);
+	if (bookingData.checkOut <= bookingData.checkIn) {
+		setAvailabilityError(
+			language === 'es'
+			? 'La fecha de salida debe ser posterior a la de llegada.'
+			: 'Check-out date must be after check-in date.'
+		);
+		return;
+	}
 
-    if (!isAvailable) {
-        alert(language === 'es' 
-            ? 'Las fechas seleccionadas no están disponibles para esta habitación. Por favor revise el calendario de fechas reservadas.' 
-            : 'The selected dates are not available for this room. Please check the booked dates list.');
-        return;
-    }
+	try {
+		const res = await api.checkAvailability(
+		room!.id,
+		bookingData.checkIn,
+		bookingData.checkOut
+		);
 
-    setBookingStep(2);
-  };
+		if ((res as any).available !== true) {
+		setAvailabilityError(
+			language === 'es'
+			? 'Las fechas seleccionadas no están disponibles.'
+			: 'Selected dates are not available.'
+		);
+		return;
+		}
+
+		setBookingStep(2);
+	} catch (e) {
+		console.error(e);
+		setAvailabilityError(language === 'es'
+			? 'Error al crear la reserva.'
+			: 'Error creating booking.'
+		);
+	}
+	};
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+	e.preventDefault();
+	setIsSubmitting(true);
 
-    const newReservation: Reservation = {
-      id: Math.random().toString(36).substr(2, 9),
-      roomId: room.id,
-      roomName: roomName,
-      checkIn: bookingData.checkIn,
-      checkOut: bookingData.checkOut,
-      guests: parseInt(bookingData.guests),
-      guestName: bookingData.name,
-      guestEmail: bookingData.email,
-      guestPhone: bookingData.phone,
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
+	try {
+		await api.createBooking({
+		roomId: room!.id,
+		checkIn: bookingData.checkIn,
+		checkOut: bookingData.checkOut,
+		guests: Number(bookingData.guests),
+		guestName: bookingData.name,
+		guestEmail: bookingData.email,
+		guestPhone: bookingData.phone,
+		});
 
-    const existing = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
-    localStorage.setItem('elizabeta_reservations', JSON.stringify([newReservation, ...existing]));
-
-    try {
-      await sendConfirmationEmail(newReservation);
-    } catch (error) {
-      console.error("Failed to send email", error);
-    }
-
-    setIsSubmitting(false);
-    setIsBooked(true);
-  };
+		setIsBooked(true);
+	} catch (e) {
+		console.error(e);
+		setAvailabilityError(
+			language === 'es'
+			? 'Error al crear la reserva con las fechas seleccionadas.'
+			: 'Error creating booking with selected dates.'
+		);
+	} finally {
+		setIsSubmitting(false);
+	}
+	};
 
   return (
     <div className="pt-24 pb-24 animate-in fade-in duration-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Navigation Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-slate-400 mb-8 pt-8">
           <Link to="/rooms" className="hover:text-primary transition-colors">{t('details.back')}</Link>
           <span className="material-symbols-outlined text-xs">chevron_right</span>
@@ -121,7 +162,6 @@ const RoomDetails: React.FC = () => {
         </nav>
 
         <div className="grid lg:grid-cols-12 gap-12">
-          {/* Gallery Section */}
           <div className="lg:col-span-7 space-y-6">
             <div className="aspect-[16/10] rounded-3xl overflow-hidden shadow-2xl border border-slate-100 dark:border-zinc-800">
               <img 
@@ -183,7 +223,6 @@ const RoomDetails: React.FC = () => {
             </div>
           </div>
 
-          {/* Booking Sidebar */}
           <div className="lg:col-span-5">
             <div className="sticky top-32">
               <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 dark:border-zinc-800">
@@ -203,28 +242,21 @@ const RoomDetails: React.FC = () => {
 
                     {bookingStep === 1 ? (
                       <form onSubmit={handleNextStep} className="space-y-6 animate-in fade-in duration-300">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                           <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkin')}</label>
-                            <input 
-                              type="date" 
-                              required
-                              className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
-                              min={new Date().toISOString().split('T')[0]}
-                              value={bookingData.checkIn}
-                              onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.checkout')}</label>
-                            <input 
-                              type="date" 
-                              required
-                              className="w-full px-4 py-3 bg-slate-50 dark:bg-zinc-800 border-none rounded-xl focus:ring-2 focus:ring-primary text-sm"
-                              min={bookingData.checkIn || new Date().toISOString().split('T')[0]}
-                              value={bookingData.checkOut}
-                              onChange={(e) => setBookingData({...bookingData, checkOut: e.target.value})}
-                            />
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">{t('home.search.dates')}</label>
+							<DateRangePicker
+								value={range}
+								onChange={(r) => {
+									setRange(r);
+									setBookingData(prev => ({
+									...prev,
+									checkIn: r?.from ? r.from.toISOString().slice(0,10) : "",
+									checkOut: r?.to ? r.to.toISOString().slice(0,10) : "",
+									}));
+								}}
+								bookedRanges={bookedRanges}
+							/>
                           </div>
                         </div>
 
@@ -241,20 +273,11 @@ const RoomDetails: React.FC = () => {
                             <option value="4">4 Guests</option>
                           </select>
                         </div>
-
-                        {bookedDates.length > 0 && (
-                          <div className="bg-slate-50 dark:bg-zinc-800/50 p-4 rounded-xl border border-slate-100 dark:border-zinc-700">
-                            <span className="text-[10px] font-bold uppercase text-red-400 mb-2 block">Unavailable Dates</span>
-                            <div className="flex flex-wrap gap-2">
-                                {bookedDates.map((range, idx) => (
-                                    <span key={idx} className="text-xs bg-white dark:bg-zinc-800 px-2 py-1 rounded-md text-slate-500 shadow-sm border border-slate-100 dark:border-zinc-700">
-                                        {new Date(range.start).toLocaleDateString(undefined, {month:'short', day:'numeric'})} - {new Date(range.end).toLocaleDateString(undefined, {month:'short', day:'numeric'})}
-                                    </span>
-                                ))}
-                            </div>
-                          </div>
-                        )}
-
+						{availabilityError && (
+						<div className="bg-red-50 text-red-600 text-xs font-bold p-3 rounded-xl">
+							{availabilityError}
+						</div>
+						)}
                         <button 
                           type="submit" 
                           className="w-full bg-primary text-white py-5 rounded-2xl font-bold text-lg hover:bg-opacity-90 shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"

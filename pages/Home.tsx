@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ROOMS as DEFAULT_ROOMS } from '../constants';
 import { Room } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { isDateRangeAvailable } from '../utils/availability';
+import { api } from '../src/lib/api';
 
 const Home: React.FC = () => {
   const [checkIn, setCheckIn] = useState('');
@@ -12,47 +12,48 @@ const Home: React.FC = () => {
   const [guests, setGuests] = useState('2');
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState(''); 
   const [rooms, setRooms] = useState<Room[]>(DEFAULT_ROOMS);
-  
   const { t, language } = useLanguage();
   const resultsRef = useRef<HTMLDivElement>(null);
+  const isSearchDisabled = !checkIn || !checkOut || checkOut <= checkIn;
 
   useEffect(() => {
-    const stored = localStorage.getItem('elizabeta_rooms');
-    if (stored) {
-      setRooms(JSON.parse(stored));
+    const load = async () => {
+    try {
+      const r = await api.getRooms();
+      setRooms(r as Room[]);
+    } catch (e) {
+      console.error(e);
+      setRooms(DEFAULT_ROOMS);
     }
+  };
+  load();
   }, []);
 
-  const handleCheckAvailability = () => {
-    if (!checkIn || !checkOut) {
-       alert(language === 'es' ? 'Por favor seleccione las fechas.' : 'Please select check-in and check-out dates.');
-       return;
-    }
-    
-    if (checkOut <= checkIn) {
-      alert(language === 'es' ? 'La fecha de salida debe ser posterior a la de llegada.' : 'Check-out date must be after check-in date.');
-      return;
-    }
+  const handleCheckAvailability = async () => {
+	if (!checkIn || !checkOut) {
+		alert(language === 'es' ? 'Por favor seleccione las fechas.' : 'Please select check-in and check-out dates.');
+		return;
+	}
+	if (checkOut <= checkIn) {
+		alert(language === 'es' ? 'La fecha de salida debe ser posterior a la de llegada.' : 'Check-out date must be after check-in date.');
+		return;
+	}
 
-    // Fetch current reservations
-    const reservations = JSON.parse(localStorage.getItem('elizabeta_reservations') || '[]');
+	try {
+		const available = await api.searchRooms(checkIn, checkOut, Number(guests));
+		setAvailableRooms(available as Room[]);
+		setHasSearched(true);
 
-    // Filter rooms by capacity AND availability
-    const filtered = rooms.filter(room => {
-        const capacityFits = room.capacity >= parseInt(guests);
-        const isAvailable = isDateRangeAvailable(room.id, checkIn, checkOut, reservations);
-        return capacityFits && isAvailable;
-    });
-
-    setAvailableRooms(filtered);
-    setHasSearched(true);
-    
-    // Smooth scroll to results
-    setTimeout(() => {
-      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
-  };
+		setTimeout(() => {
+		resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}, 100);
+	} catch (e) {
+		console.error(e);
+		alert(language === 'es' ? 'Error consultando disponibilidad.' : 'Error checking availability.');
+	}
+	};
 
   return (
     <div className="animate-in fade-in duration-700">
@@ -139,13 +140,15 @@ const Home: React.FC = () => {
                 </select>
               </div>
             </div>
-            <button 
-              onClick={handleCheckAvailability}
-              className="w-full md:w-auto bg-secondary text-white px-10 py-4 rounded-xl font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2"
-            >
-              {t('home.search.check')}
-              <span className="material-icons-outlined">search</span>
-            </button>
+            <button
+				disabled={isSearchDisabled}
+				onClick={handleCheckAvailability}
+				className={`w-full md:w-auto px-10 py-4 rounded-xl font-bold flex items-center justify-center gap-2
+					${isSearchDisabled ? "bg-slate-300 cursor-not-allowed" : "bg-secondary text-white hover:bg-opacity-90"}`}
+				>
+				{t('home.search.check')}
+				<span className="material-icons-outlined">search</span>
+			</button>
           </div>
         </div>
       </header>

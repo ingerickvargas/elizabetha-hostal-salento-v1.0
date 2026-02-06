@@ -42,12 +42,6 @@ const Navbar: React.FC = () => {
               </Link>
             ))}
             <button 
-              onClick={() => navigate('/join')}
-              className="bg-primary hover:bg-opacity-90 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition-all shadow-lg shadow-primary/20"
-            >
-              {t('nav.book')}
-            </button>
-            <button 
               onClick={() => navigate('/admin')}
               className="bg-primary hover:bg-opacity-90 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition-all shadow-lg shadow-primary/20"
             >
