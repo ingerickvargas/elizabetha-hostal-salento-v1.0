@@ -21,6 +21,14 @@ export async function sendBookingStatusEmail({
 }: BookingEmailParams) {
   const isAccepted = status === "ACCEPTED";
 
+  // Validar variables de entorno
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY not configured in environment variables");
+  }
+  if (!process.env.EMAIL_FROM) {
+    throw new Error("EMAIL_FROM not configured in environment variables");
+  }
+
   const subject = isAccepted
     ? "✅ Tu reserva ha sido confirmada"
     : "❌ Tu reserva no pudo ser confirmada";
@@ -52,10 +60,18 @@ export async function sendBookingStatusEmail({
     </div>
   `;
 
-  await resend.emails.send({
-    from: process.env.EMAIL_FROM!,
-    to,
-    subject,
-    html,
-  });
+  try {
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM,
+      to,
+      subject,
+      html,
+    });
+
+    console.log(`[Email] Booking status email sent successfully to ${to}:`, result);
+    return result;
+  } catch (error) {
+    console.error(`[Email Error] Failed to send booking status email to ${to}:`, error);
+    throw error;
+  }
 }

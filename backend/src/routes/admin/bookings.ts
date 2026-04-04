@@ -34,16 +34,24 @@ export default async function adminBookings(app: FastifyInstance) {
 
 	if (status === "ACCEPTED" || status === "REJECTED") {
 		try {
-		await sendBookingStatusEmail({
-			to: booking.guestEmail,
-			guestName: booking.guestName,
-			roomName: booking.roomName,
-			checkIn: booking.checkIn.toISOString().slice(0, 10),
-			checkOut: booking.checkOut.toISOString().slice(0, 10),
-			status,
-		});
+			console.log(`[Booking] Sending ${status} email for booking ${id} to ${booking.guestEmail}`);
+			await sendBookingStatusEmail({
+				to: booking.guestEmail,
+				guestName: booking.guestName,
+				roomName: booking.roomName,
+				checkIn: booking.checkIn.toISOString().slice(0, 10),
+				checkOut: booking.checkOut.toISOString().slice(0, 10),
+				status,
+			});
+			console.log(`[Booking] Email sent successfully for booking ${id}`);
 		} catch (err) {
-		req.log.error(err, "Error sending booking email");
+			console.error(`[Booking Error] Failed to send email for booking ${id}:`, err);
+			req.log.error(err, `Error sending booking email for ${status} status`);
+			// Return error response instead of silently failing
+			return reply.code(500).send({ 
+				message: "Booking status updated but failed to send notification email",
+				error: err instanceof Error ? err.message : "Unknown error"
+			});
 		}
 	}
 
