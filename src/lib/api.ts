@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export type ApiBookingStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 export type UiBookingStatus = "pending" | "accepted" | "rejected";
