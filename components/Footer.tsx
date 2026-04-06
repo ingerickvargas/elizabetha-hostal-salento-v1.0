@@ -29,8 +29,8 @@ const Footer: React.FC = () => {
             <ul className="space-y-4">
               <li><Link className="hover:text-primary transition-colors" to="/rooms">{t('footer.links.rooms')}</Link></li>
               <li><Link className="hover:text-primary transition-colors" to="/location">{t('footer.links.guides')}</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/">{t('footer.links.sust')}</Link></li>
-              <li><Link className="hover:text-primary transition-colors" to="/join">{t('footer.links.policy')}</Link></li>
+              <li><Link className="hover:text-primary transition-colors" to="/politica-privacidad">{t('footer.links.privacy')}</Link></li>
+              <li><Link className="hover:text-primary transition-colors" to="/politica-reservas">{t('footer.links.policy')}</Link></li>
             </ul>
           </div>
           <div>
@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-center gap-3 text-sm">
                 <span className="material-icons-outlined text-primary text-xl">email</span>
-                <span>elizabethahostal@gmail.com</span>
+                <span>reservas@elizabethahostal.com</span>
               </li>
             </ul>
           </div>

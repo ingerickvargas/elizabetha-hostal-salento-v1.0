@@ -9,6 +9,8 @@ import RoomDetails from './pages/RoomDetails';
 import Gallery from './pages/Gallery';
 import Location from './pages/Location';
 import Join from './pages/Join';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import ReservationPolicy from './pages/ReservationPolicy';
 import Admin from './pages/Admin';
 import { LanguageProvider } from './contexts/LanguageContext';
 
@@ -30,6 +32,8 @@ const App: React.FC = () => {
             {/* Layouts without standard nav/footer */}
             <Route path="/join" element={<Join />} />
             <Route path="/admin" element={<Admin />} />
+			<Route path="/politica-privacidad" element={<PrivacyPolicy />} />
+			<Route path="/politica-reservas" element={<ReservationPolicy />} />
             
             {/* Main Layout */}
             <Route

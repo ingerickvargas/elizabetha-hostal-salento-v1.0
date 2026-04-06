@@ -220,10 +220,10 @@ const Home: React.FC = () => {
               <img 
                 alt="Interior of Hostal Elizabeta" 
                 className="rounded-3xl shadow-2xl relative z-10 w-full aspect-[4/5] object-cover hover:scale-[1.02] transition-transform duration-500" 
-                src="https://images.unsplash.com/photo-1582719478250-c89cae4df85b?auto=format&fit=crop&q=80&w=1000"
+                src="https://kooibbljmurrssrtiopw.supabase.co/storage/v1/object/sign/images/home-hostal.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV84NTUxNDI5OC1hMTVlLTRkM2YtYmEwNi00ZTcyMjc5ZTQ0OTkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvaG9tZS1ob3N0YWwuanBnIiwiaWF0IjoxNzc1NDM5MzIzLCJleHAiOjE5MzMxMTkzMjN9.Q5X-TuhZwA16Pj_T1gcJ6ZQC_xRn5UDq2gvCM0dyljs"
               />
               <div className="absolute -bottom-10 -right-10 bg-secondary p-8 rounded-2xl shadow-2xl hidden lg:block z-20 max-w-[240px]">
-                <p className="text-white font-display italic text-lg leading-relaxed">"Warmth in every cup, home in every room."</p>
+                <p className="text-white font-display italic text-lg leading-relaxed">{t('home.heritage.message')}</p>
               </div>
             </div>
             <div className="space-y-8">
@@ -276,7 +276,7 @@ const Home: React.FC = () => {
           <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-8">{t('home.cta.title')}</h2>
           <p className="text-white/80 text-lg mb-12 max-w-2xl mx-auto">{t('home.cta.desc')}</p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link to="/join" className="bg-primary text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-opacity-90 shadow-2xl shadow-primary/40 transition-all">{t('home.cta.book')}</Link>
+            <Link to="/rooms" className="bg-primary text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-opacity-90 shadow-2xl shadow-primary/40 transition-all">{t('home.cta.book')}</Link>
             <Link to="/location" className="bg-transparent border-2 border-white text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-secondary transition-all">{t('home.cta.contact')}</Link>
           </div>
         </div>
