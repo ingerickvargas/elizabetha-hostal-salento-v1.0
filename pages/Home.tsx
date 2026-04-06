@@ -218,8 +218,8 @@ const Home: React.FC = () => {
             <div className="relative group">
               <div className="absolute -top-12 -left-12 w-64 h-64 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors"></div>
               <img 
-                alt="Interior of Hostal Elizabeta" 
-                className="rounded-3xl shadow-2xl relative z-10 w-full aspect-[4/5] object-cover hover:scale-[1.02] transition-transform duration-500" 
+                alt="Fachada Hostal Elizabetha" 
+                className="rounded-3xl shadow-2xl relative z-10 w-full max-h-[755px] object-contain object-center hover:scale-[1.02] transition-transform duration-500"
                 src="https://kooibbljmurrssrtiopw.supabase.co/storage/v1/object/sign/images/home-hostal.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV84NTUxNDI5OC1hMTVlLTRkM2YtYmEwNi00ZTcyMjc5ZTQ0OTkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvaG9tZS1ob3N0YWwuanBnIiwiaWF0IjoxNzc1NDM5MzIzLCJleHAiOjE5MzMxMTkzMjN9.Q5X-TuhZwA16Pj_T1gcJ6ZQC_xRn5UDq2gvCM0dyljs"
               />
               <div className="absolute -bottom-10 -right-10 bg-secondary p-8 rounded-2xl shadow-2xl hidden lg:block z-20 max-w-[240px]">
