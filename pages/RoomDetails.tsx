@@ -73,6 +73,7 @@ const RoomDetails: React.FC = () => {
   const roomName = language === 'es' ? room.name_es || room.name : room.name;
   const roomDesc = language === 'es' ? room.longDescription_es || room.longDescription : room.longDescription;
   const roomSize = language === 'es' ? room.size_es : room.size;
+  const roomCapacity = language === 'es' ? room.capacity : room.capacity;
   const roomBathroom = language === 'es' ? room.bathroom_es : room.bathroom;
   const roomAmenity = language === 'es' ? room.amenity_es : room.amenity;
 
@@ -188,7 +189,7 @@ const RoomDetails: React.FC = () => {
               <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">{roomName}</h1>
               <div className="flex flex-wrap gap-4 mb-8">
                 <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">square_foot</span> {roomSize}
+                  <span className="material-symbols-outlined text-sm">user</span> {roomCapacity}
                 </span>
                 <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
                   <span className="material-symbols-outlined text-sm">shower</span> {roomBathroom}
@@ -233,11 +234,6 @@ const RoomDetails: React.FC = () => {
                         <span className="text-3xl font-bold text-slate-900 dark:text-white">${room.price}</span>
                         <span className="text-slate-500 text-sm ml-1">{t('details.book.night')}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-primary">
-                        <span className="material-symbols-outlined fill-1">star</span>
-                        <span className="font-bold">4.9</span>
-                        <span className="text-xs text-slate-400 font-medium">{t('details.book.reviews')}</span>
-                      </div>
                     </div>
 
                     {bookingStep === 1 ? (
@@ -270,7 +266,8 @@ const RoomDetails: React.FC = () => {
                             <option value="1">{t('home.search.guest1')}</option>
                             <option value="2">{t('home.search.guest2')}</option>
                             <option value="3">{t('home.search.guest3')}</option>
-                            <option value="4">4 Guests</option>
+							<option value="4">{t('home.search.guest4')}</option>
+							<option value="5">{t('home.search.guest5')}</option>
                           </select>
                         </div>
 						{availabilityError && (

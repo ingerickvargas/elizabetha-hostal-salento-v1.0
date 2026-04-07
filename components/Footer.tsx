@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 const Footer: React.FC = () => {
   const { t } = useLanguage();
@@ -16,13 +17,24 @@ const Footer: React.FC = () => {
               {t('footer.desc')}
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors">
-                <span className="material-icons-outlined text-lg">facebook</span>
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors">
-                <span className="material-icons-outlined text-lg">instagram</span>
-              </a>
-            </div>
+			  <a
+				href="https://instagram.com/elizabetha.hostal.salento"
+				target="_blank"
+				rel="noreferrer"
+				className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors"
+			  >
+				<FaInstagram className="w-5 h-5 text-white" />
+			  </a>
+
+			  <a
+				href="https://wa.me/573225379425"
+				target="_blank"
+				rel="noreferrer"
+				className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary transition-colors"
+			  >
+				<FaWhatsapp className="w-5 h-5 text-white" />
+			  </a>
+			</div>
           </div>
           <div>
             <h4 className="text-white font-bold mb-6 text-lg">{t('footer.links')}</h4>

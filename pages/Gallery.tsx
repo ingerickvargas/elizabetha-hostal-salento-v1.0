@@ -95,13 +95,19 @@ const Gallery: React.FC = () => {
         <div className="mt-32 text-center py-20 bg-slate-50 dark:bg-zinc-900/50 rounded-[3rem] border border-slate-100 dark:border-zinc-800">
           <h2 className="text-3xl font-display font-bold mb-10 text-slate-900 dark:text-white">{t('gallery.social.title')}</h2>
           <div className="flex flex-col sm:flex-row justify-center gap-6 px-4">
-            <a href="#" className="flex items-center justify-center gap-3 px-10 py-4 rounded-2xl bg-white dark:bg-zinc-800 shadow-xl border border-slate-100 dark:border-zinc-700 transition-all hover:-translate-y-1">
+            <a href="https://instagram.com/elizabetha.hostal.salento"
+				target="_blank"
+				rel="noreferrer"
+				className="flex items-center justify-center gap-3 px-10 py-4 rounded-2xl bg-white dark:bg-zinc-800 shadow-xl border border-slate-100 dark:border-zinc-700 transition-all hover:-translate-y-1">
               <span className="material-symbols-outlined text-primary text-2xl">photo_camera</span>
               <span className="font-bold text-slate-700 dark:text-slate-200">Instagram</span>
             </a>
-            <a href="#" className="flex items-center justify-center gap-3 px-10 py-4 rounded-2xl bg-white dark:bg-zinc-800 shadow-xl border border-slate-100 dark:border-zinc-700 transition-all hover:-translate-y-1">
-              <span className="material-symbols-outlined text-primary text-2xl">movie</span>
-              <span className="font-bold text-slate-700 dark:text-slate-200">TikTok</span>
+            <a href="https://wa.me/573225379425"
+				target="_blank"
+				rel="noreferrer"
+				className="flex items-center justify-center gap-3 px-10 py-4 rounded-2xl bg-white dark:bg-zinc-800 shadow-xl border border-slate-100 dark:border-zinc-700 transition-all hover:-translate-y-1">
+              <span className="material-symbols-outlined text-primary text-2xl">phone</span>
+              <span className="font-bold text-slate-700 dark:text-slate-200">WhatsApp</span>
             </a>
           </div>
         </div>
