@@ -25,9 +25,11 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0 flex items-center space-x-2">
             <Link to="/">
-              <div className="bg-primary/20 p-2 rounded-lg">
-                <span className="material-symbols-outlined text-primary font-bold">cottage</span>
-              </div>
+				  <img
+					src="https://kooibbljmurrssrtiopw.supabase.co/storage/v1/object/sign/images/logo_header.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV84NTUxNDI5OC1hMTVlLTRkM2YtYmEwNi00ZTcyMjc5ZTQ0OTkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvbG9nb19oZWFkZXIucG5nIiwiaWF0IjoxNzc1NTE4ODk1LCJleHAiOjE4Mzg1OTA4OTV9.R4spVOC0J2ustjs4UNc5mmfF6-Z9m3Qkvx2J3vTUd5s"
+					alt="Hostal Elizabetha"
+					className="h-12 w-auto object-contain transition-transform duration-300 hover:scale-105"
+				  />
             </Link>
           </div>
           

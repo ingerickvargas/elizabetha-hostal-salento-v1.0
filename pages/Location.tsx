@@ -26,12 +26,12 @@ const Location: React.FC = () => {
                   title="Salento Map"
                   loading="lazy" 
                   className="w-full h-full grayscale-[0.2]"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15911.649980645672!2d-75.57866531393655!3d4.637375276633604!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e38f654f15d9685%3A0x6476b70176d6c95c!2sSalento%2C%20Quind%C3%ADo!5e0!3m2!1sen!2sco!4v1700000000000!5m2!1sen!2sco"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d248.54650429220632!2d-75.56967290275163!3d4.639681374338922!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e388dca0951a857%3A0xc4f59116386ee3d2!2sElizabetha%20Hostal!5e0!3m2!1ses-419!2sco!4v1775517524878!5m2!1ses-419!2sco"
                 ></iframe>
               </div>
               <div className="absolute bottom-8 left-8 bg-white/95 dark:bg-zinc-900/95 p-6 rounded-2xl shadow-2xl max-w-xs border border-primary/20 backdrop-blur-md">
-                <h3 className="font-display text-secondary dark:text-primary font-bold text-xl mb-1">Hostal Elizabeta</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Calle 6 #4-22, Salento, Quindío, Colombia</p>
+                <h3 className="font-display text-secondary dark:text-primary font-bold text-xl mb-1">Elizabetha Hostal</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Carrera 4 #3-16, Salento, Quindío, Colombia</p>
               </div>
             </div>
 
@@ -87,9 +87,9 @@ const Location: React.FC = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-10">
             {[
-              { title: t('location.poi.cocora'), img: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&q=80&w=600', desc: t('location.poi.cocora.desc') },
+              { title: t('location.poi.cocora'), img: 'https://kooibbljmurrssrtiopw.supabase.co/storage/v1/object/sign/images/salento.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV84NTUxNDI5OC1hMTVlLTRkM2YtYmEwNi00ZTcyMjc5ZTQ0OTkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvc2FsZW50by5qcGciLCJpYXQiOjE3NzU1MTc4MjYsImV4cCI6MTgzODU4OTgyNn0._FJVk1J_iVmBljzgupxKYIL73KwCCLPjMK-ypKr3do0', desc: t('location.poi.cocora.desc') },
               { title: t('location.poi.coffee'), img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=600', desc: t('location.poi.coffee.desc') },
-              { title: t('location.poi.filandia'), img: 'https://images.unsplash.com/photo-1534067783941-51c9c23ecefd?auto=format&fit=crop&q=80&w=600', desc: t('location.poi.filandia.desc') }
+              { title: t('location.poi.filandia'), img: 'https://kooibbljmurrssrtiopw.supabase.co/storage/v1/object/sign/images/filandia.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV84NTUxNDI5OC1hMTVlLTRkM2YtYmEwNi00ZTcyMjc5ZTQ0OTkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvZmlsYW5kaWEuanBnIiwiaWF0IjoxNzc1NTE3ODYwLCJleHAiOjE4Mzg1ODk4NjB9.OsVX6BXAYXzhKEtieycJ5JiUPrB-xRRDk45Q1o0nuzk', desc: t('location.poi.filandia.desc') }
             ].map(poi => (
               <div key={poi.title} className="group cursor-pointer rounded-3xl overflow-hidden bg-white dark:bg-zinc-800 shadow-xl border border-slate-100 dark:border-zinc-700">
                 <div className="h-64 overflow-hidden">

@@ -137,6 +137,8 @@ const Home: React.FC = () => {
                   <option value="1">{t('home.search.guest1')}</option>
                   <option value="2">{t('home.search.guest2')}</option>
                   <option value="3">{t('home.search.guest3')}</option>
+				  <option value="4">{t('home.search.guest4')}</option>
+				  <option value="5">{t('home.search.guest5')}</option>
                 </select>
               </div>
             </div>
