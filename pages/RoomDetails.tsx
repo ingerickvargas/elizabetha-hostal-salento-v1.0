@@ -189,7 +189,7 @@ const RoomDetails: React.FC = () => {
               <h1 className="text-4xl md:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">{roomName}</h1>
               <div className="flex flex-wrap gap-4 mb-8">
                 <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-sm">user</span> {roomCapacity}
+                  <span className="material-symbols-outlined text-sm">group</span> {roomCapacity}
                 </span>
                 <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
                   <span className="material-symbols-outlined text-sm">shower</span> {roomBathroom}

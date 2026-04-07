@@ -87,8 +87,8 @@ const Rooms: React.FC = () => {
 
                 <div className="flex items-center gap-4 text-slate-400 mb-8 border-t border-slate-50 dark:border-zinc-800 pt-6">
                   <div className="flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-primary text-xl">square_foot</span>
-                    <span className="text-xs font-medium">{language === 'es' ? room.size_es : room.size}</span>
+                    <span className="material-symbols-outlined text-primary text-xl">group</span>
+                    <span className="text-xs font-medium">{language === 'es' ? room.capacity : room.capacity}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-primary text-xl">shower</span>
