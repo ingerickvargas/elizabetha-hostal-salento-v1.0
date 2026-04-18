@@ -231,7 +231,7 @@ const RoomDetails: React.FC = () => {
                   <>
                     <div className="flex justify-between items-end mb-8">
                       <div>
-                        <span className="text-3xl font-bold text-slate-900 dark:text-white">${room.price}</span>
+                        <span className="text-3xl font-bold text-slate-900 dark:text-white">COP {room.price}</span>
                         <span className="text-slate-500 text-sm ml-1">{t('details.book.night')}</span>
                       </div>
                     </div>
